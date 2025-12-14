@@ -41,7 +41,7 @@ int main()
 
 	printNumberOfVertexAttributes();
 
-	Shader simpleShader("./Shaders/simpleVertInverted.glsl", "./Shaders/simpleFrag.glsl");
+	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 
 	GLuint rainbowTriangleVAO = getRainbowTriangleVAO();
 
@@ -56,6 +56,7 @@ int main()
 		glClear(GL_STENCIL_BUFFER_BIT);
 		// draw triangle
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
+		simpleShader.setFloat("offset", 0.5);
 
 		// Draw two triangles via separate VBOs and VAOs.
 		glBindVertexArray(rainbowTriangleVAO);
