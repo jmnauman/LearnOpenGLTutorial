@@ -2,35 +2,45 @@
 #include <glfw3.h>
 #include <iostream>
 #include <__msvc_ostream.hpp>
+#include "helpers.h"
 
-static void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-static void processInput(GLFWwindow* window);
-static void drawTriangle();
+void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+void drawTriangle();
 GLuint getTriangleVAO();
 GLuint getRectangleVAO();
 GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
 
+
 // Just storing the shader source as a string for now
+// to pass a variable from vertex to fragment, declare as out in the vertex and declare as in in the fragment with same name and type
+// uniform variables are global across the shader program. Can be accessed from anyy shader at any stage of the program. IF IT ISNT USED ANYWHERE IN GLSL CODE, thevariable is siletnly removed from teh compiled version
+// OpenGL requires a vec4 output in the fragment shader to draw a color for that fragment
 const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"out vec4 vertexColor;\n"
 "void main()\n"
 "{\n"
 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
 "}\0";
 
 const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
+"in vec4 vertexColor;\n"
 "void main()\n"
 "{\n"
 "	FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"   FragColor = vertexColor;\n"
 "}\0";
 
 const char* yellowFragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
+"uniform vec4 ourColor;\n" // This is set in OpenGL code
 "void main()\n"
 "{\n"
-"	FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+"	FragColor = ourColor;\n"
 "}\0";
 
 int main()
@@ -57,6 +67,8 @@ int main()
 
 	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback); // Will resize the viewport as the window resizes
+
+	printNumberOfVertexAttributes();
 
 	GLuint vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -159,6 +171,17 @@ int main()
 		glBindVertexArray(triangleVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glUseProgram(yellowShaderProgram); // Optionally use a different shader for the second triangle.
+
+		// Set a uniform for use in the shader
+		float time = glfwGetTime();
+		float greenValue = (sin(time) / 2.0f) + 0.5f;
+		int ourColorLocation = glGetUniformLocation(yellowShaderProgram, "ourColor");
+		if (ourColorLocation == -1)
+		{
+			std::cout << "Could not find uniform location" << '\n';
+		}
+		glUniform4f(ourColorLocation,0.0f, greenValue, 0.0f, 1.0); // We must be using the shader program for this call to work
+
 		glBindVertexArray(triTwoVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -337,4 +360,3 @@ GLuint getTriangleTwoVAO()
 
 	return VAO;
 }
-
