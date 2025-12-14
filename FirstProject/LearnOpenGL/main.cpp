@@ -3,6 +3,7 @@
 #include <iostream>
 #include <__msvc_ostream.hpp>
 #include "helpers.h"
+#include "shader.h"
 
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -12,28 +13,6 @@ GLuint getRectangleVAO();
 GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
 GLuint getRainbowTriangleVAO();
-
-// Just storing the shader source as a string for now
-// to pass a variable from vertex to fragment, declare as out in the vertex and declare as in in the fragment with same name and type
-// uniform variables are global across the shader program. Can be accessed from anyy shader at any stage of the program. IF IT ISNT USED ANYWHERE IN GLSL CODE, thevariable is siletnly removed from teh compiled version
-// OpenGL requires a vec4 output in the fragment shader to draw a color for that fragment
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;"
-"out vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"   ourColor = aColor;\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"	FragColor = vec4(ourColor, 1.0);\n"
-"}\0";
 
 int main()
 {
@@ -62,45 +41,7 @@ int main()
 
 	printNumberOfVertexAttributes();
 
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-	glCompileShader(vertexShader);
-	int success = 0;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-		std::cout << "Shader compilation failed:\n" << infoLog << "\n";
-	}
-
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-	glCompileShader(fragmentShader);
-	success = 0;
-	char infoLog2[512];
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog2);
-		std::cout << "Shader compilation failed:\n" << infoLog2 << "\n";
-	}
-
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	success = 0;
-	char infoLog3[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog3);
-		std::cout << "Shader linking failed:\n" << infoLog3 << '\n';
-	}
-	glDeleteShader(vertexShader); // We don't need these after we've finished creating the program
-	glDeleteShader(fragmentShader);
+	Shader simpleShader(".\\Shaders\\simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 
 	GLuint rainbowTriangleVAO = getRainbowTriangleVAO();
 
@@ -114,7 +55,7 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 		// draw triangle
-		glUseProgram(shaderProgram); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
+		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 
 		// Draw two triangles via separate VBOs and VAOs.
 		glBindVertexArray(rainbowTriangleVAO);

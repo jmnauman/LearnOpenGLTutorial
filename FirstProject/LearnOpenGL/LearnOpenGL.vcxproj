@@ -131,11 +131,17 @@
     <ClInclude Include="helpers.h" />
     <ClInclude Include="LearnOpenGL\glad\include\glad\glad.h" />
     <ClInclude Include="LearnOpenGL\glad\include\KHR\khrplatform.h" />
+    <ClInclude Include="shader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="LearnOpenGL\glad\src\glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="shader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\simpleFrag.glsl" />
+    <None Include="Shaders\simpleVert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
