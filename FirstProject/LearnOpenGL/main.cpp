@@ -41,7 +41,7 @@ int main()
 
 	printNumberOfVertexAttributes();
 
-	Shader simpleShader(".\\Shaders\\simpleVert.glsl", "./Shaders/simpleFrag.glsl");
+	Shader simpleShader("./Shaders/simpleVertInverted.glsl", "./Shaders/simpleFrag.glsl");
 
 	GLuint rainbowTriangleVAO = getRainbowTriangleVAO();
 

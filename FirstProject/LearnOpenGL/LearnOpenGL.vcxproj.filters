@@ -45,5 +45,6 @@
   <ItemGroup>
     <None Include="Shaders\simpleFrag.glsl" />
     <None Include="Shaders\simpleVert.glsl" />
+    <None Include="Shaders\simpleVertInverted.glsl" />
   </ItemGroup>
 </Project>
