@@ -1,0 +1,1 @@
+GLFW was compiled following the instructions here: https://learnopengl.com/Getting-started/Creating-a-window
