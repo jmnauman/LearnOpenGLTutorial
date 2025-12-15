@@ -2,36 +2,17 @@
 #include <glfw3.h>
 #include <iostream>
 #include <__msvc_ostream.hpp>
+#include "helpers.h"
+#include "shader.h"
 
-static void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-static void processInput(GLFWwindow* window);
-static void drawTriangle();
+void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+void drawTriangle();
 GLuint getTriangleVAO();
 GLuint getRectangleVAO();
 GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
-
-// Just storing the shader source as a string for now
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"	FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\0";
-
-const char* yellowFragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"	FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
-"}\0";
+GLuint getRainbowTriangleVAO();
 
 int main()
 {
@@ -58,78 +39,11 @@ int main()
 	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback); // Will resize the viewport as the window resizes
 
-	GLuint vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-	glCompileShader(vertexShader);
-	int success = 0;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-		std::cout << "Shader compilation failed:\n" << infoLog << "\n";
-	}
+	printNumberOfVertexAttributes();
 
-	GLuint fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-	glCompileShader(fragmentShader);
-	success = 0;
-	char infoLog2[512];
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog2);
-		std::cout << "Shader compilation failed:\n" << infoLog2 << "\n";
-	}
+	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 
-	GLuint shaderProgram;
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	success = 0;
-	char infoLog3[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog3);
-		std::cout << "Shader linking failed:\n" << infoLog3 << '\n';
-	}
-	//glDeleteShader(vertexShader); // We don't need these after we've finished creating the program
-	glDeleteShader(fragmentShader);
-
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &yellowFragmentShaderSource, nullptr);
-	glCompileShader(fragmentShader);
-	success = 0;
-	glGetProgramiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (success != 0)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-		std::cout << "Shader complilation failed:\n" << infoLog << '\n';
-	}
-
-	GLuint yellowShaderProgram = glCreateProgram();
-	glAttachShader(yellowShaderProgram, vertexShader);
-	glAttachShader(yellowShaderProgram, fragmentShader);
-	glLinkProgram(yellowShaderProgram);
-	success = 0;
-	glGetProgramiv(yellowShaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(yellowShaderProgram, 512, nullptr, infoLog3);
-		std::cout << "Shader linking failed:\n" << infoLog3 << '\n';
-	}
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	GLuint triangleVAO = getTriangleVAO();
-	GLuint rectVAO = getRectangleVAO();
-	GLuint twoTriangleVAO = getTwoTrianglesVAO();
-	GLuint triTwoVAO = getTriangleTwoVAO();
+	GLuint rainbowTriangleVAO = getRainbowTriangleVAO();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 
@@ -141,25 +55,10 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 		// draw triangle
-		glUseProgram(shaderProgram); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
-
-		// Draw a single triangle
-		//glBindVertexArray(triangleVAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		// Draw a rectangle using EBO for indices
-		//glBindVertexArray(rectVAO);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr); // count is number of indices, don't need to specify the indices since we're using an EBO, but that parameter can also be used as an offset.
-
-		// Draw the rectangle without the EBO
-		//glBindVertexArray(twoTriangleVAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 
 		// Draw two triangles via separate VBOs and VAOs.
-		glBindVertexArray(triangleVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glUseProgram(yellowShaderProgram); // Optionally use a different shader for the second triangle.
-		glBindVertexArray(triTwoVAO);
+		glBindVertexArray(rainbowTriangleVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
@@ -338,3 +237,40 @@ GLuint getTriangleTwoVAO()
 	return VAO;
 }
 
+// This produces a rainbow effect because the output color from the vertex is interpolated between the verts based on
+// fragment position.
+GLuint getRainbowTriangleVAO()
+{
+	// First 3 of each row are positions, second 3 of each row are colors
+	// The stride is now 24 for everything, 12 for each attribute.
+	float vertices[] = {
+	-0.5f, -0.5f, 0.0f, 1.f, 0.f, 0.f,
+	 0.5f, -0.5f, 0.0f, 0.f, 1.f, 0.f,
+	 0.0f,  0.5f, 0.0f, 0.f, 0.f, 1.f
+	};
+
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// Position attribute
+	// Size appears to be the number of components. The stride is the stride for an ENTIRE VERTEX.
+	// The last argument gives the offset of the attribute within a single vertex
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
+	glEnableVertexAttribArray(0);
+	// Color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+
+	return VAO;
+}

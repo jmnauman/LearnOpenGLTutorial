@@ -21,6 +21,12 @@
     <ClInclude Include="LearnOpenGL\glad\include\glad\glad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LearnOpenGL\glad\src\glad.c">
@@ -29,5 +35,16 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\simpleFrag.glsl" />
+    <None Include="Shaders\simpleVert.glsl" />
+    <None Include="Shaders\simpleVertInverted.glsl" />
   </ItemGroup>
 </Project>
