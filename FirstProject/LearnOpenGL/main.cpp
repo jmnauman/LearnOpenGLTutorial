@@ -9,7 +9,7 @@
 #include "../ThirdParty/stb_image.h"
 
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, float& mixStrength);
 void drawTriangle();
 GLuint getTriangleVAO();
 GLuint getRectangleVAO(float texScale, float texOffset);
@@ -48,15 +48,16 @@ int main()
 
 	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 
-	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP, GL_NEAREST);
-	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT, GL_NEAREST);
-	GLuint VAO = getRectangleVAO(0.025, 0.5);
+	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
+	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
+	GLuint VAO = getRectangleVAO(1.f, 0.f);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 
+	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
-		processInput(window);
+		processInput(window, mixStrength);
 		glClearColor(0.3f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -64,6 +65,7 @@ int main()
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
 		simpleShader.setInt("tex2", 1);
+		simpleShader.setFloat("mixStrength", mixStrength);
 		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
 		glBindTexture(GL_TEXTURE_2D, tex0);
 		glActiveTexture(GL_TEXTURE1);
@@ -88,10 +90,16 @@ void frameBufferSizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, float& mixStrength)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		mixStrength = mixStrength + 0.01f > 1.f ? 1.f : mixStrength + 0.01f;
+
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		mixStrength = mixStrength - 0.01f < 0.f ? 0.f : mixStrength - 0.01f;
 }
 
 // Usually when you have multiple objects, you first generatte/configure all the VAOs (attribute pointers + VBOs) then store for later use.
