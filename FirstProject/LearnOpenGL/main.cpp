@@ -101,7 +101,13 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, tex1);
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
+		trans = I;
+		trans = glm::translate(trans, glm::vec3(-.5f, .5f, 0.f));
+		trans = glm::scale(trans, glm::vec3(glm::sin((float)glfwGetTime())));
+		simpleShader.setMatrix4("transform", trans);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
 
