@@ -15,7 +15,7 @@ GLuint getTriangleVAO();
 GLuint getRectangleVAO();
 GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
-GLuint getRainbowTriangleVAO();
+GLuint getTriangleVAOWithTexCoord();
 
 int main()
 {
@@ -68,8 +68,9 @@ int main()
 	}
 	stbi_image_free(data);
 	data = nullptr;
+	glBindTexture(GL_TEXTURE_2D, 0);
 
-	GLuint rainbowTriangleVAO = getRainbowTriangleVAO();
+	GLuint VAO = getRectangleVAO();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 
@@ -80,12 +81,14 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
-		// draw triangle
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
-
-		// Draw two triangles via separate VBOs and VAOs.
-		glBindVertexArray(rainbowTriangleVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		
+		// It seems like the texture is automatically bound to the sampler we defined in the shader. Unclear how this is supposed to work. Sure you could have more than one texture?
+		// I expected a function to call on the shader to bind the texture to the sampler's name, but didn't see one.
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindVertexArray(VAO);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
 
@@ -169,10 +172,11 @@ GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
 GLuint getRectangleVAO()
 {
 	float vertices[] = {
-		-0.5, -0.5, 0, // bot left
-		-0.5, 0.5, 0, // up left
-		0.5, 0.5, 0, // up right
-		0.5, -0.5, 0 //bot right 
+		// positions          // colors           // texture coords
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
 	};
 
 	unsigned int indices[]
@@ -195,8 +199,12 @@ GLuint getRectangleVAO()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	// VERY IMPORTANT. YOU NEED TO UNBIND VAO FIRST. The vao records the bind buffer calls. Which means if we unbind the others first, they end up unbound in the VAO
 	// Last element buffer bound while the VAO is bound will be rebound when the VAO is rebound
@@ -263,16 +271,16 @@ GLuint getTriangleTwoVAO()
 	return VAO;
 }
 
-// This produces a rainbow effect because the output color from the vertex is interpolated between the verts based on
+// Without using a texture, this produces a rainbow effect because the output color from the vertex is interpolated between the verts based on
 // fragment position.
-GLuint getRainbowTriangleVAO()
+GLuint getTriangleVAOWithTexCoord()
 {
-	// First 3 of each row are positions, second 3 of each row are colors
-	// The stride is now 24 for everything, 12 for each attribute.
+	// First 3 of each row are positions, second 3 of each row are colors, third two are tex coords
+	// The stride is now 32 for everything, 12 for each attribute.
 	float vertices[] = {
-	-0.5f, -0.5f, 0.0f, 1.f, 0.f, 0.f,
-	 0.5f, -0.5f, 0.0f, 0.f, 1.f, 0.f,
-	 0.0f,  0.5f, 0.0f, 0.f, 0.f, 1.f
+	-0.5f, -0.5f, 0.0f, 1.f, 0.f, 0.f, 0.f, 0.f,
+	 0.5f, -0.5f, 0.0f, 0.f, 1.f, 0.f, 1.f, 0.f,
+	 0.0f,  0.5f, 0.0f, 0.f, 0.f, 1.f, 0.5f, 1.f
 	};
 
 	GLuint VBO;
@@ -288,11 +296,14 @@ GLuint getRainbowTriangleVAO()
 	// Position attribute
 	// Size appears to be the number of components. The stride is the stride for an ENTIRE VERTEX.
 	// The last argument gives the offset of the attribute within a single vertex
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
 	glEnableVertexAttribArray(0);
 	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	// tex coord attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
