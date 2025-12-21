@@ -5,8 +5,14 @@
 #include "helpers.h"
 #include "shader.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #define STB_IMAGE_IMPLEMENTATION
-#include "../ThirdParty/stb_image.h"
+#include <stb_image.h>
+
+#define I glm::mat4(1.f)
 
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, float& mixStrength);
@@ -54,6 +60,22 @@ int main()
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 
+	// example of translating
+	glm::vec4 vec(1.f, 0.f, 0.f, 1.f);
+	glm::mat4 trans = glm::mat4(1.f); // This initializes as the identity matrix
+	trans = glm::translate(trans, glm::vec3(1.f, 1.f, 0.f));
+	vec = trans * vec;
+	std::cout << vec.x << vec.y << vec.z << '\n';
+
+	// example of rotating ccw by 90 deg and making twice as small
+	trans = I;
+	trans = glm::rotate(trans, glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+	trans = glm::scale(trans, glm::vec3(.5f, .5f, .5f));
+
+	trans = I;
+	trans = glm::translate(trans, glm::vec3(.5f, -.5f, 0.f));
+	glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
@@ -62,10 +84,17 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
+
+		// Move to the bottom right are rotate over time
+		trans = I;
+		trans = glm::translate(trans, glm::vec3(.5f, -.5f, 0.f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
 		simpleShader.setInt("tex2", 1);
 		simpleShader.setFloat("mixStrength", mixStrength);
+		simpleShader.setMatrix4("transform", trans);
 		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
 		glBindTexture(GL_TEXTURE_2D, tex0);
 		glActiveTexture(GL_TEXTURE1);

@@ -3,7 +3,6 @@
 out vec4 FragColor;
 
 in vec3 ourColor;
-in vec3 vertPos;
 in vec2 interpTexCoord;
 
 uniform sampler2D tex;

@@ -10,16 +10,13 @@ layout (location = 1) in vec3 aColor;
 layout (location = 2) in vec2 texCoord;
 
 out vec3 ourColor;
-out vec3 vertPos;
 out vec2 interpTexCoord;
 
-uniform float offset;
+uniform mat4 transform;
 
 void main()
 {
-   vec3 position = aPos + vec3(offset, 0.0, 0.0);
-   gl_Position = vec4(position.x, position.y, position.z, 1.0);
+   gl_Position = transform * vec4(aPos, 1.0);
    ourColor = aColor;
-   vertPos = position;
    interpTexCoord = texCoord;
 };
