@@ -146,6 +146,7 @@
     <None Include="Shaders\simpleVertInverted.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Resources\awesomeface.png" />
     <Image Include="Resources\container.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -17,6 +17,8 @@ GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
 GLuint getTriangleVAOWithTexCoord();
 
+GLuint createTex(const char* texPath);
+
 int main()
 {
 	glfwInit();
@@ -46,30 +48,8 @@ int main()
 
 	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 
-	const char* texPath = "./Resources/container.jpg";
-	int width, height, numChannels;
-	unsigned char* data = stbi_load(texPath, &width, &height, &numChannels, 0);
-
-	GLuint texture = 0;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Repeat horizontally if s (think UVs) is less than zero or greater than one. Could also clamp here.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When the texture takes up a small enough portion of the screen, (i.e. minification) use mipmaps. Linear filtering between mipmap levels and linear filtering between texels.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When the texture is scaled larger, use linear filtering on texels.
-	if (data != nullptr)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture from " << texPath << '\n';
-	}
-	stbi_image_free(data);
-	data = nullptr;
-	glBindTexture(GL_TEXTURE_2D, 0);
-
+	GLuint tex0 = createTex("./Resources/container.jpg");
+	GLuint tex1 = createTex("./Resources/awesomeface.png");
 	GLuint VAO = getRectangleVAO();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
@@ -82,10 +62,12 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
-		
-		// It seems like the texture is automatically bound to the sampler we defined in the shader. Unclear how this is supposed to work. Sure you could have more than one texture?
-		// I expected a function to call on the shader to bind the texture to the sampler's name, but didn't see one.
-		glBindTexture(GL_TEXTURE_2D, texture);
+		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
+		simpleShader.setInt("tex2", 1);
+		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
+		glBindTexture(GL_TEXTURE_2D, tex0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, tex1);
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -310,4 +292,43 @@ GLuint getTriangleVAOWithTexCoord()
 	glBindVertexArray(0);
 
 	return VAO;
+}
+
+GLuint createTex(const char* texPath)
+{
+	GLuint texture = 0;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Repeat horizontally if s (think UVs) is less than zero or greater than one. Could also clamp here.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When the texture takes up a small enough portion of the screen, (i.e. minification) use mipmaps. Linear filtering between mipmap levels and linear filtering between texels.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When the texture is scaled larger, use linear filtering on texels.
+
+	int width, height, numChannels;
+	unsigned char* data = stbi_load(texPath, &width, &height, &numChannels, 0);
+	GLenum fmt = GL_NONE;
+	if (numChannels == 3)
+	{
+		fmt = GL_RGB;
+	}
+	else if (numChannels == 4)
+	{
+		fmt = GL_RGBA;
+	}
+
+
+	if (data != nullptr)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, fmt, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture from " << texPath << '\n';
+	}
+	stbi_image_free(data);
+	data = nullptr;
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return texture;
 }

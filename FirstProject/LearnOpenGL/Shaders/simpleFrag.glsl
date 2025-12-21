@@ -7,8 +7,9 @@ in vec3 vertPos;
 in vec2 interpTexCoord;
 
 uniform sampler2D tex;
+uniform sampler2D tex2;
 
 void main()
 {
-	FragColor = texture(tex, interpTexCoord) * vec4(ourColor, 1.0);
+	FragColor = mix(texture(tex, interpTexCoord), texture(tex2, interpTexCoord), 0.2); // mix linerarly interpolates between the two arguments based on the third. In this case, 80% of the color is taken from first texture.
 };
