@@ -11,5 +11,6 @@ uniform sampler2D tex2;
 
 void main()
 {
-	FragColor = mix(texture(tex, interpTexCoord), texture(tex2, interpTexCoord), 0.2); // mix linerarly interpolates between the two arguments based on the third. In this case, 80% of the color is taken from first texture.
+	vec2 mirrored = vec2(-interpTexCoord.x, interpTexCoord.y);
+	FragColor = mix(texture(tex, interpTexCoord), texture(tex2, mirrored), 0.2); // mix linerarly interpolates between the two arguments based on the third. In this case, 80% of the color is taken from first texture.
 };
