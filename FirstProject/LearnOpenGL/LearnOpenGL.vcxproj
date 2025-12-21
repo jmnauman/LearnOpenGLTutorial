@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\ThirdParty\GLFW\Include;.\LearnOpenGL\glad\include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\ThirdParty\GLFW\Include;.\LearnOpenGL\glad\include\;.\ThirdParty</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);..\ThirdParty\GLFW\Lib;</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,6 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\ThirdParty\stb_image.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="LearnOpenGL\glad\include\glad\glad.h" />
     <ClInclude Include="LearnOpenGL\glad\include\KHR\khrplatform.h" />
@@ -143,6 +144,10 @@
     <None Include="Shaders\simpleFrag.glsl" />
     <None Include="Shaders\simpleVert.glsl" />
     <None Include="Shaders\simpleVertInverted.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\awesomeface.png" />
+    <Image Include="Resources\container.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

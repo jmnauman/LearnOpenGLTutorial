@@ -5,14 +5,19 @@
 #include "helpers.h"
 #include "shader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../ThirdParty/stb_image.h"
+
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, float& mixStrength);
 void drawTriangle();
 GLuint getTriangleVAO();
-GLuint getRectangleVAO();
+GLuint getRectangleVAO(float texScale, float texOffset);
 GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
-GLuint getRainbowTriangleVAO();
+GLuint getTriangleVAOWithTexCoord();
+
+GLuint createTex(const char* texPath, int sWrap = GL_REPEAT, int tWrap = GL_REPEAT, int magFilter = GL_LINEAR);
 
 int main()
 {
@@ -43,23 +48,31 @@ int main()
 
 	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 
-	GLuint rainbowTriangleVAO = getRainbowTriangleVAO();
+	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
+	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
+	GLuint VAO = getRectangleVAO(1.f, 0.f);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 
+	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
-		processInput(window);
+		processInput(window, mixStrength);
 		glClearColor(0.3f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
-		// draw triangle
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
-
-		// Draw two triangles via separate VBOs and VAOs.
-		glBindVertexArray(rainbowTriangleVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
+		simpleShader.setInt("tex2", 1);
+		simpleShader.setFloat("mixStrength", mixStrength);
+		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
+		glBindTexture(GL_TEXTURE_2D, tex0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, tex1);
+		glBindVertexArray(VAO);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
 
@@ -77,10 +90,16 @@ void frameBufferSizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, float& mixStrength)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		mixStrength = mixStrength + 0.01f > 1.f ? 1.f : mixStrength + 0.01f;
+
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		mixStrength = mixStrength - 0.01f < 0.f ? 0.f : mixStrength - 0.01f;
 }
 
 // Usually when you have multiple objects, you first generatte/configure all the VAOs (attribute pointers + VBOs) then store for later use.
@@ -140,13 +159,14 @@ GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
 }
 
 // WHen we draw with an element buffer,we call glDrawElements
-GLuint getRectangleVAO()
+GLuint getRectangleVAO(float texScale, float offset)
 {
 	float vertices[] = {
-		-0.5, -0.5, 0, // bot left
-		-0.5, 0.5, 0, // up left
-		0.5, 0.5, 0, // up right
-		0.5, -0.5, 0 //bot right 
+		// positions          // colors           // texture coords
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   texScale + offset, texScale + offset,   // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   texScale + offset, offset,   // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   offset, offset,   // bottom left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   offset, texScale + offset    // top left 
 	};
 
 	unsigned int indices[]
@@ -169,8 +189,12 @@ GLuint getRectangleVAO()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	// VERY IMPORTANT. YOU NEED TO UNBIND VAO FIRST. The vao records the bind buffer calls. Which means if we unbind the others first, they end up unbound in the VAO
 	// Last element buffer bound while the VAO is bound will be rebound when the VAO is rebound
@@ -237,16 +261,16 @@ GLuint getTriangleTwoVAO()
 	return VAO;
 }
 
-// This produces a rainbow effect because the output color from the vertex is interpolated between the verts based on
+// Without using a texture, this produces a rainbow effect because the output color from the vertex is interpolated between the verts based on
 // fragment position.
-GLuint getRainbowTriangleVAO()
+GLuint getTriangleVAOWithTexCoord()
 {
-	// First 3 of each row are positions, second 3 of each row are colors
-	// The stride is now 24 for everything, 12 for each attribute.
+	// First 3 of each row are positions, second 3 of each row are colors, third two are tex coords
+	// The stride is now 32 for everything, 12 for each attribute.
 	float vertices[] = {
-	-0.5f, -0.5f, 0.0f, 1.f, 0.f, 0.f,
-	 0.5f, -0.5f, 0.0f, 0.f, 1.f, 0.f,
-	 0.0f,  0.5f, 0.0f, 0.f, 0.f, 1.f
+	-0.5f, -0.5f, 0.0f, 1.f, 0.f, 0.f, 0.f, 0.f,
+	 0.5f, -0.5f, 0.0f, 0.f, 1.f, 0.f, 1.f, 0.f,
+	 0.0f,  0.5f, 0.0f, 0.f, 0.f, 1.f, 0.5f, 1.f
 	};
 
 	GLuint VBO;
@@ -262,15 +286,59 @@ GLuint getRainbowTriangleVAO()
 	// Position attribute
 	// Size appears to be the number of components. The stride is the stride for an ENTIRE VERTEX.
 	// The last argument gives the offset of the attribute within a single vertex
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
 	glEnableVertexAttribArray(0);
 	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	// tex coord attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 
 	return VAO;
+}
+
+GLuint createTex(const char* texPath, int sWrap, int tWrap, int magFilter)
+{
+	stbi_set_flip_vertically_on_load(true); // For STBI, y == 0 is at the top. For OpenGL, y == 0 is at the bottom.
+
+	GLuint texture = 0;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sWrap); // Repeat horizontally if s (think UVs) is less than zero or greater than one. Could also clamp here.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tWrap);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When the texture takes up a small enough portion of the screen, (i.e. minification) use mipmaps. Linear filtering between mipmap levels and linear filtering between texels.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); // When the texture is scaled larger, use linear filtering on texels.
+
+	int width, height, numChannels;
+	unsigned char* data = stbi_load(texPath, &width, &height, &numChannels, 0);
+	GLenum fmt = GL_NONE;
+	if (numChannels == 3)
+	{
+		fmt = GL_RGB;
+	}
+	else if (numChannels == 4)
+	{
+		fmt = GL_RGBA;
+	}
+
+
+	if (data != nullptr)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, fmt, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture from " << texPath << '\n';
+	}
+	stbi_image_free(data);
+	data = nullptr;
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return texture;
 }
