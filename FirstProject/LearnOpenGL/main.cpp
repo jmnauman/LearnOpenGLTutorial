@@ -296,6 +296,8 @@ GLuint getTriangleVAOWithTexCoord()
 
 GLuint createTex(const char* texPath)
 {
+	stbi_set_flip_vertically_on_load(true); // For STBI, y == 0 is at the top. For OpenGL, y == 0 is at the bottom.
+
 	GLuint texture = 0;
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
