@@ -17,7 +17,7 @@ GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
 GLuint getTriangleVAOWithTexCoord();
 
-GLuint createTex(const char* texPath);
+GLuint createTex(const char* texPath, int sWrap = GL_REPEAT, int tWrap = GL_REPEAT);
 
 int main()
 {
@@ -48,7 +48,7 @@ int main()
 
 	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 
-	GLuint tex0 = createTex("./Resources/container.jpg");
+	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
 	GLuint tex1 = createTex("./Resources/awesomeface.png");
 	GLuint VAO = getRectangleVAO();
 
@@ -155,10 +155,10 @@ GLuint getRectangleVAO()
 {
 	float vertices[] = {
 		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 2.0f,   // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 0.0f,   // bottom right
 		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 2.0f    // top left 
 	};
 
 	unsigned int indices[]
@@ -294,15 +294,15 @@ GLuint getTriangleVAOWithTexCoord()
 	return VAO;
 }
 
-GLuint createTex(const char* texPath)
+GLuint createTex(const char* texPath, int sWrap, int tWrap)
 {
 	stbi_set_flip_vertically_on_load(true); // For STBI, y == 0 is at the top. For OpenGL, y == 0 is at the bottom.
 
 	GLuint texture = 0;
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Repeat horizontally if s (think UVs) is less than zero or greater than one. Could also clamp here.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sWrap); // Repeat horizontally if s (think UVs) is less than zero or greater than one. Could also clamp here.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tWrap);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When the texture takes up a small enough portion of the screen, (i.e. minification) use mipmaps. Linear filtering between mipmap levels and linear filtering between texels.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When the texture is scaled larger, use linear filtering on texels.
 
