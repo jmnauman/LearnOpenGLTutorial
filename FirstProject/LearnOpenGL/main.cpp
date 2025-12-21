@@ -5,6 +5,9 @@
 #include "helpers.h"
 #include "shader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../ThirdParty/stb_image.h"
+
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void drawTriangle();
@@ -42,6 +45,29 @@ int main()
 	printNumberOfVertexAttributes();
 
 	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
+
+	const char* texPath = "./Resources/container.jpg";
+	int width, height, numChannels;
+	unsigned char* data = stbi_load(texPath, &width, &height, &numChannels, 0);
+
+	GLuint texture = 0;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Repeat horizontally if s (think UVs) is less than zero or greater than one. Could also clamp here.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When the texture takes up a small enough portion of the screen, (i.e. minification) use mipmaps. Linear filtering between mipmap levels and linear filtering between texels.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When the texture is scaled larger, use linear filtering on texels.
+	if (data != nullptr)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture from " << texPath << '\n';
+	}
+	stbi_image_free(data);
+	data = nullptr;
 
 	GLuint rainbowTriangleVAO = getRainbowTriangleVAO();
 
