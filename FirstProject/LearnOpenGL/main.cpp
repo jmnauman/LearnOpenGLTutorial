@@ -12,12 +12,12 @@ void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void drawTriangle();
 GLuint getTriangleVAO();
-GLuint getRectangleVAO();
+GLuint getRectangleVAO(float texScale, float texOffset);
 GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
 GLuint getTriangleVAOWithTexCoord();
 
-GLuint createTex(const char* texPath, int sWrap = GL_REPEAT, int tWrap = GL_REPEAT);
+GLuint createTex(const char* texPath, int sWrap = GL_REPEAT, int tWrap = GL_REPEAT, int magFilter = GL_LINEAR);
 
 int main()
 {
@@ -48,9 +48,9 @@ int main()
 
 	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 
-	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
-	GLuint tex1 = createTex("./Resources/awesomeface.png");
-	GLuint VAO = getRectangleVAO();
+	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP, GL_NEAREST);
+	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT, GL_NEAREST);
+	GLuint VAO = getRectangleVAO(0.025, 0.5);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 
@@ -151,14 +151,14 @@ GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
 }
 
 // WHen we draw with an element buffer,we call glDrawElements
-GLuint getRectangleVAO()
+GLuint getRectangleVAO(float texScale, float offset)
 {
 	float vertices[] = {
 		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 2.0f,   // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 0.0f,   // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 2.0f    // top left 
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   texScale + offset, texScale + offset,   // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   texScale + offset, offset,   // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   offset, offset,   // bottom left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   offset, texScale + offset    // top left 
 	};
 
 	unsigned int indices[]
@@ -294,7 +294,7 @@ GLuint getTriangleVAOWithTexCoord()
 	return VAO;
 }
 
-GLuint createTex(const char* texPath, int sWrap, int tWrap)
+GLuint createTex(const char* texPath, int sWrap, int tWrap, int magFilter)
 {
 	stbi_set_flip_vertically_on_load(true); // For STBI, y == 0 is at the top. For OpenGL, y == 0 is at the bottom.
 
@@ -304,7 +304,7 @@ GLuint createTex(const char* texPath, int sWrap, int tWrap)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sWrap); // Repeat horizontally if s (think UVs) is less than zero or greater than one. Could also clamp here.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tWrap);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When the texture takes up a small enough portion of the screen, (i.e. minification) use mipmaps. Linear filtering between mipmap levels and linear filtering between texels.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When the texture is scaled larger, use linear filtering on texels.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); // When the texture is scaled larger, use linear filtering on texels.
 
 	int width, height, numChannels;
 	unsigned char* data = stbi_load(texPath, &width, &height, &numChannels, 0);
