@@ -13,7 +13,7 @@
 #include <stb_image.h>
 
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window, float& mixStrength);
+void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime);
 void drawTriangle();
 GLuint getTriangleVAO();
 GLuint getRectangleVAO(float texScale, float texOffset);
@@ -28,6 +28,9 @@ glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f);
 glm::vec3 cameraTarget = glm::vec3(0.f, 0.f, 0.f);
 glm::vec3 cameraFront = glm::vec3(0.f, 0.f, -1.f);
 glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
+
+float deltaTime = 0.f;
+float lastFrame = 0.f;
 
 int main()
 {
@@ -81,7 +84,11 @@ int main()
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
-		processInput(window, mixStrength);
+		float time = (float)glfwGetTime();
+		deltaTime = time - lastFrame;
+		lastFrame = time;
+
+		processInput(window, mixStrength, deltaTime);
 		glClearColor(0.3f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -128,9 +135,9 @@ void frameBufferSizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window, float& mixStrength)
+void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime)
 {
-	const float cameraSpeed = 0.05f;
+	const float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
