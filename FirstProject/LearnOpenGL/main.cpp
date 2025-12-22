@@ -58,6 +58,12 @@ int main()
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 
+	glm::mat4 model = r(glm::vec3(1.f, 0.f, 0.f), glm::radians(-55.0f));
+	// Note that we're translating the SCENE relative to the camera. In this case, moving the scene forward to get the appearance
+	// of moving the camera back.
+	glm::mat4 view = t(glm::vec3(0.f, 0.f, -3.f));
+	glm::mat4 proj = pProj(45.f, 800.f, 600.f, 0.1f, 100.f);
+
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
@@ -67,24 +73,19 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
-		// Move to the bottom right are rotate over time
-		glm::mat4 m = tr(glm::vec3(.5f, -.5f, 0.f), zAxis(), (float)glfwGetTime());
-		
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
 		simpleShader.setInt("tex2", 1);
 		simpleShader.setFloat("mixStrength", mixStrength);
-		simpleShader.setMatrix4("transform", m);
+		simpleShader.setMatrix4("model", model);
+		simpleShader.setMatrix4("view", view);
+		simpleShader.setMatrix4("proj", proj);
 		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
 		glBindTexture(GL_TEXTURE_2D, tex0);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, tex1);
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-
-		m = ts(glm::vec3(-.5f, .5f, 0.f), sin((float)glfwGetTime()));
-		simpleShader.setMatrix4("transform", m);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
