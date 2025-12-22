@@ -30,3 +30,5 @@ v_clip = proj * view * model * v_local. This is what we assign to gl_Position wh
 After vertex, OpenGL will automatically perform perspective division and map those to screen space. It gets the NDC->screen transform based on glViewPort parameters.
 	
 OpenGL is right-handed. THIS MEANS THAT FROM THE VIEW PERSPECTIVE, POSITIVE Z IS TOWARD THE CAMERA. But NDC ARE LEFT HANDED. DX is also left handed.
+
+OpenGL does not guarantee draw order of triangles within the same draw call. Depth is stored in z (depth) buffer. GLFW automatically creates depth buffer.
