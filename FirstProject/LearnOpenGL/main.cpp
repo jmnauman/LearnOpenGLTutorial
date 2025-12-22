@@ -12,6 +12,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "FlyCamera.h"
+
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime);
 void mouseCallback(GLFWwindow* window, double xPos, double yPos);
@@ -26,19 +28,12 @@ GLuint getBoxVAO();
 
 GLuint createTex(const char* texPath, int sWrap = GL_REPEAT, int tWrap = GL_REPEAT, int magFilter = GL_LINEAR);
 
-glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f);
-glm::vec3 cameraTarget = glm::vec3(0.f, 0.f, 0.f);
-glm::vec3 cameraFront = glm::vec3(0.f, 0.f, -1.f);
-glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
-
 float deltaTime = 0.f;
 float lastFrame = 0.f;
-float pitch = 0.f;
-float yaw = -90.f; // With the way we've defined our coordinate frames and derived yaw/pitch calculation, a yaw of 0 would point along +x. We want to default to -z.
 float lastX = 400;
 float lastY = 300;
 bool firstMouse = true;
-float fov = 60.f;
+FlyCamera camera(800.f / 600.f);
 
 int main()
 {
@@ -106,17 +101,12 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
-		// we now want to look directly in front of wherever the camera is at, so we add cameraPos + cameraFront to get a position for that.
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, up);
-
-		glm::mat4 proj = pProj(fov, 800.f, 600.f, 0.1f, 100.f);
-
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
 		simpleShader.setInt("tex2", 1);
 		simpleShader.setFloat("mixStrength", mixStrength);
-		simpleShader.setMatrix4("view", view);
-		simpleShader.setMatrix4("proj", proj);
+		simpleShader.setMatrix4("view", camera.getView());
+		simpleShader.setMatrix4("proj", camera.getProj());
 
 		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
 		glBindTexture(GL_TEXTURE_2D, tex0);
@@ -160,23 +150,20 @@ void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime)
 		mixStrength = mixStrength - 0.01f < 0.f ? 0.f : mixStrength - 0.01f;
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		camera.moveForward(deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.moveBackward(deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * glm::normalize(glm::cross(cameraFront, up));
+		camera.moveLeft(deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += cameraSpeed * glm::normalize(glm::cross(cameraFront, up));
+		camera.moveRight(deltaTime);
 }
 
 void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 {
-	const float yawSensitivity = 0.05f;
-	const float pitchSensitivity = 0.05f;
-
 	if (firstMouse)
 	{
 		lastX = xPos;
@@ -188,25 +175,13 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 	float dy = yPos - lastY;
 	lastX = xPos;
 	lastY = yPos;
-	// todo: delta time?
 
-	yaw += dx * yawSensitivity;
-	pitch -= dy * pitchSensitivity;
-	glm::clamp(pitch, -89.f, 89.f);
-	float yawRad = glm::radians(yaw);
-	float pitchRad = glm::radians(pitch);
-	cameraFront.x = cos(yawRad) * cos(pitchRad);
-	cameraFront.y = sin(pitchRad);
-	cameraFront.z = sin(yawRad) * cos(pitchRad);
-	cameraFront = glm::normalize(cameraFront);
+	camera.adjustLook(dx, dy);
 }
 
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 {
-	// Tweaking fov acts a zoom in/out. Reducing fov reduces the scene's projected space, which means objects within that space span
-	// a greater range of NDC.
-	fov -= (float)yOffset;
-	fov = glm::clamp(fov, 1.f, 80.f);
+	camera.zoom(-yOffset);
 }
 
 // Usually when you have multiple objects, you first generatte/configure all the VAOs (attribute pointers + VBOs) then store for later use.
