@@ -14,6 +14,8 @@
 
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime);
+void mouseCallback(GLFWwindow* window, double xPos, double yPos);
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void drawTriangle();
 GLuint getTriangleVAO();
 GLuint getRectangleVAO(float texScale, float texOffset);
@@ -31,6 +33,12 @@ glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
 
 float deltaTime = 0.f;
 float lastFrame = 0.f;
+float pitch = 0.f;
+float yaw = -90.f; // With the way we've defined our coordinate frames and derived yaw/pitch calculation, a yaw of 0 would point along +x. We want to default to -z.
+float lastX = 400;
+float lastY = 300;
+bool firstMouse = true;
+float fov = 60.f;
 
 int main()
 {
@@ -46,6 +54,10 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
+	// Capture mouse movement, force it to remain inside the window, and don't show the pointer.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouseCallback);
+	glfwSetScrollCallback(window, scrollCallback);
 	glfwMakeContextCurrent(window);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -97,7 +109,7 @@ int main()
 		// we now want to look directly in front of wherever the camera is at, so we add cameraPos + cameraFront to get a position for that.
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, up);
 
-		glm::mat4 proj = pProj(60.f, 800.f, 600.f, 0.1f, 100.f);
+		glm::mat4 proj = pProj(fov, 800.f, 600.f, 0.1f, 100.f);
 
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
@@ -158,6 +170,43 @@ void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime)
 
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		cameraPos += cameraSpeed * glm::normalize(glm::cross(cameraFront, up));
+}
+
+void mouseCallback(GLFWwindow* window, double xPos, double yPos)
+{
+	const float yawSensitivity = 0.05f;
+	const float pitchSensitivity = 0.05f;
+
+	if (firstMouse)
+	{
+		lastX = xPos;
+		lastY = yPos;
+		firstMouse = false;
+	}
+
+	float dx = xPos - lastX;
+	float dy = yPos - lastY;
+	lastX = xPos;
+	lastY = yPos;
+	// todo: delta time?
+
+	yaw += dx * yawSensitivity;
+	pitch -= dy * pitchSensitivity;
+	glm::clamp(pitch, -89.f, 89.f);
+	float yawRad = glm::radians(yaw);
+	float pitchRad = glm::radians(pitch);
+	cameraFront.x = cos(yawRad) * cos(pitchRad);
+	cameraFront.y = sin(pitchRad);
+	cameraFront.z = sin(yawRad) * cos(pitchRad);
+	cameraFront = glm::normalize(cameraFront);
+}
+
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
+{
+	// Tweaking fov acts a zoom in/out. Reducing fov reduces the scene's projected space, which means objects within that space span
+	// a greater range of NDC.
+	fov -= (float)yOffset;
+	fov = glm::clamp(fov, 1.f, 80.f);
 }
 
 // Usually when you have multiple objects, you first generatte/configure all the VAOs (attribute pointers + VBOs) then store for later use.
