@@ -73,6 +73,11 @@ int main()
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
+	glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f);
+	glm::vec3 cameraTarget = glm::vec3(0.f, 0.f, 0.f);
+	glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
+	glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
+
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
@@ -82,9 +87,11 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
-		// Note that we're translating the SCENE relative to the camera. In this case, moving the scene forward to get the appearance
-		// of moving the camera back.
-		glm::mat4 view = t(glm::vec3(0.f, 0.f, -3.f));
+		const float radius = 10.f;
+		float camX = sin(glfwGetTime()) * radius;
+		float camY = cos(glfwGetTime()) * radius;
+		glm::mat4 view = glm::lookAt(glm::vec3(camX, 0.f, camY), cameraTarget, up);
+
 		glm::mat4 proj = pProj(60.f, 800.f, 600.f, 0.1f, 100.f);
 
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
