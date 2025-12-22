@@ -12,8 +12,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#define I glm::mat4(1.f)
-
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, float& mixStrength);
 void drawTriangle();
@@ -60,22 +58,6 @@ int main()
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 
-	// example of translating
-	glm::vec4 vec(1.f, 0.f, 0.f, 1.f);
-	glm::mat4 trans = glm::mat4(1.f); // This initializes as the identity matrix
-	trans = glm::translate(trans, glm::vec3(1.f, 1.f, 0.f));
-	vec = trans * vec;
-	std::cout << vec.x << vec.y << vec.z << '\n';
-
-	// example of rotating ccw by 90 deg and making twice as small
-	trans = I;
-	trans = glm::rotate(trans, glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
-	trans = glm::scale(trans, glm::vec3(.5f, .5f, .5f));
-
-	trans = I;
-	trans = glm::translate(trans, glm::vec3(.5f, -.5f, 0.f));
-	glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
-
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
@@ -86,15 +68,13 @@ int main()
 		glClear(GL_STENCIL_BUFFER_BIT);
 
 		// Move to the bottom right are rotate over time
-		trans = I;
-		trans = glm::translate(trans, glm::vec3(.5f, -.5f, 0.f));
-		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
-
+		glm::mat4 m = tr(glm::vec3(.5f, -.5f, 0.f), zAxis(), (float)glfwGetTime());
+		
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
 		simpleShader.setInt("tex2", 1);
 		simpleShader.setFloat("mixStrength", mixStrength);
-		simpleShader.setMatrix4("transform", trans);
+		simpleShader.setMatrix4("transform", m);
 		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
 		glBindTexture(GL_TEXTURE_2D, tex0);
 		glActiveTexture(GL_TEXTURE1);
@@ -103,10 +83,8 @@ int main()
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-		trans = I;
-		trans = glm::translate(trans, glm::vec3(-.5f, .5f, 0.f));
-		trans = glm::scale(trans, glm::vec3(glm::sin((float)glfwGetTime())));
-		simpleShader.setMatrix4("transform", trans);
+		m = ts(glm::vec3(-.5f, .5f, 0.f), sin((float)glfwGetTime()));
+		simpleShader.setMatrix4("transform", m);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.

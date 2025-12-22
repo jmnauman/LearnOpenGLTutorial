@@ -31,3 +31,44 @@ bool readFile(const std::string& path, std::string& outSrc)
 
 	return success;
 }
+
+glm::vec3 zAxis()
+{
+	return glm::vec3(0.f, 0.f, 1.f);
+}
+
+glm::mat4 t(glm::vec3 trans)
+{
+	glm::mat4 m = glm::mat4(1.f);
+	return glm::translate(m, trans);
+}
+
+glm::mat4 tr(glm::vec3 trans, glm::vec3 axis, float angle)
+{
+	glm::mat4 m = t(trans);
+	return glm::rotate(m, angle, axis);
+}
+
+glm::mat4 ts(glm::vec3 trans, glm::vec3 scale)
+{
+	glm::mat4 m = t(trans);
+	return glm::scale(m, scale);
+}
+
+glm::mat4 ts(glm::vec3 trans, float scale)
+{
+	glm::vec3 v(scale);
+	return ts(trans, v);
+}
+
+glm::mat4 trs(glm::vec3 trans, glm::vec3 axis, float angle, float scale)
+{
+	glm::vec3 v(scale);
+	return trs(trans, axis, angle, v);
+}
+
+glm::mat4 trs(glm::vec3 trans, glm::vec3 axis, float angle, glm::vec3 scale)
+{
+	glm::mat4 m = tr(trans, axis, angle);
+	return glm::scale(m, scale);
+}
