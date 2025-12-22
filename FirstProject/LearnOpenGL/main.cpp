@@ -20,6 +20,7 @@ GLuint getRectangleVAO(float texScale, float texOffset);
 GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
 GLuint getTriangleVAOWithTexCoord();
+GLuint getBoxVAO();
 
 GLuint createTex(const char* texPath, int sWrap = GL_REPEAT, int tWrap = GL_REPEAT, int magFilter = GL_LINEAR);
 
@@ -54,15 +55,9 @@ int main()
 
 	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
 	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
-	GLuint VAO = getRectangleVAO(1.f, 0.f);
+	GLuint VAO = getBoxVAO();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
-
-	glm::mat4 model = r(glm::vec3(1.f, 0.f, 0.f), glm::radians(-55.0f));
-	// Note that we're translating the SCENE relative to the camera. In this case, moving the scene forward to get the appearance
-	// of moving the camera back.
-	glm::mat4 view = t(glm::vec3(0.f, 0.f, -3.f));
-	glm::mat4 proj = pProj(45.f, 800.f, 600.f, 0.1f, 100.f);
 
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
@@ -72,6 +67,12 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
+
+		glm::mat4 model = r(glm::vec3(0.5f, 1.0f, 0.f), (float)glfwGetTime() * glm::radians(-55.0f));
+		// Note that we're translating the SCENE relative to the camera. In this case, moving the scene forward to get the appearance
+		// of moving the camera back.
+		glm::mat4 view = t(glm::vec3(0.f, 0.f, -3.f));
+		glm::mat4 proj = pProj(45.f, 800.f, 600.f, 0.1f, 100.f);
 
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
@@ -85,8 +86,8 @@ int main()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, tex1);
 		glBindVertexArray(VAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
 
@@ -314,6 +315,70 @@ GLuint getTriangleVAOWithTexCoord()
 	glBindVertexArray(0);
 
 	return VAO;
+}
+
+GLuint getBoxVAO()
+{
+	float vertices[] = {
+	   -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	   -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	   -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	   -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	   -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	   -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	   -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	   -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	   -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	   -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	   -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	   -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	   -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	   -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	   -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	   -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	   -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	   -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+
+	GLuint vao = 0;
+	glGenVertexArrays(1, &vao);
+	GLuint vbo = 0;
+	glGenBuffers(1, &vbo);
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)nullptr);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	return vao;
 }
 
 GLuint createTex(const char* texPath, int sWrap, int tWrap, int magFilter)
