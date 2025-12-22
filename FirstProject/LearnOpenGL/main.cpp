@@ -24,6 +24,11 @@ GLuint getBoxVAO();
 
 GLuint createTex(const char* texPath, int sWrap = GL_REPEAT, int tWrap = GL_REPEAT, int magFilter = GL_LINEAR);
 
+glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f);
+glm::vec3 cameraTarget = glm::vec3(0.f, 0.f, 0.f);
+glm::vec3 cameraFront = glm::vec3(0.f, 0.f, -1.f);
+glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
+
 int main()
 {
 	glfwInit();
@@ -73,11 +78,6 @@ int main()
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
-	glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f);
-	glm::vec3 cameraTarget = glm::vec3(0.f, 0.f, 0.f);
-	glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
-	glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
-
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
@@ -87,10 +87,8 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
-		const float radius = 10.f;
-		float camX = sin(glfwGetTime()) * radius;
-		float camY = cos(glfwGetTime()) * radius;
-		glm::mat4 view = glm::lookAt(glm::vec3(camX, 0.f, camY), cameraTarget, up);
+		// we now want to look directly in front of wherever the camera is at, so we add cameraPos + cameraFront to get a position for that.
+		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, up);
 
 		glm::mat4 proj = pProj(60.f, 800.f, 600.f, 0.1f, 100.f);
 
@@ -132,6 +130,7 @@ void frameBufferSizeCallback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window, float& mixStrength)
 {
+	const float cameraSpeed = 0.05f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
@@ -140,6 +139,18 @@ void processInput(GLFWwindow* window, float& mixStrength)
 
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		mixStrength = mixStrength - 0.01f < 0.f ? 0.f : mixStrength - 0.01f;
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraFront;
+
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraFront;
+
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * glm::normalize(glm::cross(cameraFront, up));
+
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += cameraSpeed * glm::normalize(glm::cross(cameraFront, up));
 }
 
 // Usually when you have multiple objects, you first generatte/configure all the VAOs (attribute pointers + VBOs) then store for later use.
