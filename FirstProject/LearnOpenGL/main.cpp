@@ -85,7 +85,7 @@ int main()
 		// Note that we're translating the SCENE relative to the camera. In this case, moving the scene forward to get the appearance
 		// of moving the camera back.
 		glm::mat4 view = t(glm::vec3(0.f, 0.f, -3.f));
-		glm::mat4 proj = pProj(45.f, 800.f, 600.f, 0.1f, 100.f);
+		glm::mat4 proj = pProj(60.f, 800.f, 600.f, 0.1f, 100.f);
 
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
@@ -102,7 +102,8 @@ int main()
 
 		for (auto i = 0; i < 10; i++)
 		{
-			glm::mat4 model = tr(cubePositions[i], glm::vec3(0.5f, 1.0f, 0.f), (float)glfwGetTime() * (float)(i + 1) * glm::radians(-55.0f));
+			float rotate = i % 3 == 0 ? i + 1 : 0;
+			glm::mat4 model = tr(cubePositions[i], glm::vec3(0.5f, 1.0f, 0.f), (float)glfwGetTime() * rotate * glm::radians(-55.0f));
 			simpleShader.setMatrix4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
