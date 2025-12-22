@@ -1,0 +1,34 @@
+After vertex shader, all vertices must be in NDC, normalized device coordinates. Goes from -1.0 to 1.0 in OpenGl.
+5 important coordinate systems:
+  Local (object) space - coordinates are relative to local origin
+  World space - coordinates are relative to some global origin 
+  View (eye/camera) space - coordinates are relative to the camera's PoV
+  Clip space - -1.0 to 1.0, determines which vertices will end up on screen. Perspective transforms are applied here. This is output of vert shaders
+                it's called clip space because coordinates outside this range are thrown away ("clipped")
+  Screen space - coordinates are in the range of the viewport coordinates. Results are sent to rasterize and turned into fragments.
+  
+Vertices start in local space, then usually converted to the following 3 depending on what operations you need, then end up in screen space.
+
+Matrices:
+	Model: local->world
+	View: world->viewport
+	Projection: view->clip. We define a range of coordinates in each direction that get mapped to NDC, then coordinates outside NDC are clipped. Matrix defines a frustrum in 3D.
+				Once transformed to clip space, perspective division is performed (divide positions by homogenous w). We don't have to worry about this, it's automatically performed at end of vertex step.
+	Viewport: clip->screen, OpenGL applies this automatically.
+	
+Orthographic:
+	Frustrum is a rectangular prism. Just clip based purely on width, height, distance.
+	Directly maps coordinates to NDC, doesn't change the w component so perspective division has no effect.
+		
+Perspective:
+	Distant objects are smaller. Parallel lines converge. Unlike ortho, manupales w which gets higher as the object farther. Dividing by w essentially compresses the distance between vertices.
+	w goes from -1.0 to 1.0
+	out = (x/w, y/w, z/w)
+	
+v_clip = proj * view * model * v_local. This is what we assign to gl_Position when outputing from vertex shader.
+
+After vertex, OpenGL will automatically perform perspective division and map those to screen space. It gets the NDC->screen transform based on glViewPort parameters.
+	
+OpenGL is right-handed. THIS MEANS THAT FROM THE VIEW PERSPECTIVE, POSITIVE Z IS TOWARD THE CAMERA. But NDC ARE LEFT HANDED. DX is also left handed.
+
+OpenGL does not guarantee draw order of triangles within the same draw call. Depth is stored in z (depth) buffer. GLFW automatically creates depth buffer.

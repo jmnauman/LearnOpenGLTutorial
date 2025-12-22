@@ -43,6 +43,12 @@ glm::mat4 t(glm::vec3 trans)
 	return glm::translate(m, trans);
 }
 
+glm::mat4 r(glm::vec3 axis, float angle)
+{
+	glm::mat4 m = glm::mat4(1.f);
+	return glm::rotate(m, angle, axis);
+}
+
 glm::mat4 tr(glm::vec3 trans, glm::vec3 axis, float angle)
 {
 	glm::mat4 m = t(trans);
@@ -71,4 +77,15 @@ glm::mat4 trs(glm::vec3 trans, glm::vec3 axis, float angle, glm::vec3 scale)
 {
 	glm::mat4 m = tr(trans, axis, angle);
 	return glm::scale(m, scale);
+}
+
+glm::mat4 oProj(float minusX, float x, float minusY, float y, float minusZ, float z)
+{
+	return glm::ortho(minusX, x, minusY, y, minusZ, z);
+}
+
+glm::mat4 pProj(float fovDeg, float width, float height, float near, float far)
+{
+	// fov is the vertical angle, i.e. around x axis.
+	return glm::perspective(glm::radians(fovDeg), width / height, near, far);
 }
