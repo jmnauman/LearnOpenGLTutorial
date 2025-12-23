@@ -30,7 +30,7 @@ private:
 	float yawSensitivity = 0.5f;
 	float pitchSensitivity = 0.5f;
 
-	glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f);
+	glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 5.f);
 	glm::vec3 cameraFront = glm::vec3(0.f, 0.f, -1.f);
 	glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
 };

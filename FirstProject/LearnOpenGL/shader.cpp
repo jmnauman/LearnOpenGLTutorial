@@ -73,6 +73,12 @@ void Shader::setMatrix4(const std::string& name, glm::mat4 mat) const
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
+void Shader::setVector3(const std::string& name, glm::vec3 vec) const
+{
+	GLint location = glGetUniformLocation(id, name.c_str());
+	glUniform3fv(location, 1, &vec[0]);
+}
+
 bool checkCompilationStatus(GLuint shaderId, const std::string& path)
 {
 	char infoLog[512];

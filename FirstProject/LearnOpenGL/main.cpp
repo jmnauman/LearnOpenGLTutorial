@@ -60,16 +60,20 @@ int main()
 
 	printNumberOfVertexAttributes();
 
-	Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
+	//Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
+	Shader lightingShader("./Shaders/lightingVert.glsl", "./Shaders/lightingFrag.glsl");
+	Shader lightSourceShader("./Shaders/lightingVert.glsl", "./Shaders/lightSourceFrag.glsl");
 
 	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
 	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
-	GLuint VAO = getBoxVAO();
+
+	GLuint objectVAO = getBoxVAO();
+	GLuint lightVAO = getLightSourceVAO();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); Use this for wireframe
 	glEnable(GL_DEPTH_TEST);
 
-	std::vector<glm::vec3> cubePositions = tenRandomCubePositions();
+	std::vector<glm::vec3> cubePositions = tenRandomPositions();
 
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
@@ -79,32 +83,31 @@ int main()
 		lastFrame = time;
 
 		processInput(window, mixStrength, deltaTime);
-		glClearColor(0.3f, 0.2f, 0.2f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
-		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
-		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
-		simpleShader.setInt("tex2", 1);
-		simpleShader.setFloat("mixStrength", mixStrength);
-		simpleShader.setMatrix4("view", camera.getView());
-		simpleShader.setMatrix4("proj", camera.getProj());
+		lightingShader.use();
+		lightingShader.setMatrix4("view", camera.getView());
+		lightingShader.setMatrix4("proj", camera.getProj());
+		lightingShader.setVector3("objectColor", glm::vec3(1.f, 0.5f, 0.31f));
+		lightingShader.setVector3("lightColor", glm::vec3(1.f, 1.f, 1.f));
 
-		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
-		glBindTexture(GL_TEXTURE_2D, tex0);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, tex1);
-		glBindVertexArray(VAO);
+		glBindVertexArray(objectVAO);
+		glm::mat4 model(1.f);
+		lightingShader.setMatrix4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		for (auto i = 0; i < 10; i++)
-		{
-			float rotate = i % 3 == 0 ? i + 1 : 0;
-			glm::mat4 model = tr(cubePositions[i], glm::vec3(0.5f, 1.0f, 0.f), (float)glfwGetTime() * rotate * glm::radians(-55.0f));
-			simpleShader.setMatrix4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		// The light source object is simply so that we can visualize where the light source is
+		lightSourceShader.use();
+		lightSourceShader.setMatrix4("view", camera.getView());
+		lightSourceShader.setMatrix4("proj", camera.getProj());
+		glBindVertexArray(lightVAO);
+		model = glm::translate(model, glm::vec3(1.2f, 1.f, 2.f));
+		model = glm::scale(model, glm::vec3(0.2f));
+		lightSourceShader.setMatrix4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
 

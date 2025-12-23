@@ -10,4 +10,5 @@ GLuint getTwoTrianglesVAO();
 GLuint getTriangleTwoVAO();
 GLuint getTriangleVAOWithTexCoord();
 GLuint getBoxVAO();
-std::vector<glm::vec3> tenRandomCubePositions();
+GLuint getLightSourceVAO();
+std::vector<glm::vec3> tenRandomPositions();
