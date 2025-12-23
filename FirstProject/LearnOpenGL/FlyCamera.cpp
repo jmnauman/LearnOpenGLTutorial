@@ -30,12 +30,14 @@ void FlyCamera::adjustLook(float dx, float dy)
 
 void FlyCamera::moveForward(const float deltaTime)
 {
-	cameraPos += deltaTime *cameraSpeed * cameraFront;
+	glm::vec3 moveDir = glm::normalize(glm::vec3(cameraFront.x, 0.f, cameraFront.z));
+	cameraPos += deltaTime * cameraSpeed * moveDir;
 }
 
 void FlyCamera::moveBackward(float deltaTime)
 {
-	cameraPos -= deltaTime * cameraSpeed * cameraFront;
+	glm::vec3 moveDir = glm::normalize(glm::vec3(cameraFront.x, 0.f, cameraFront.z));
+	cameraPos -= deltaTime * cameraSpeed * moveDir;
 }
 
 void FlyCamera::moveLeft(float deltaTime)
