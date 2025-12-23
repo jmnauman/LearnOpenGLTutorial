@@ -134,6 +134,7 @@
     <ClInclude Include="LearnOpenGL\glad\include\glad\glad.h" />
     <ClInclude Include="LearnOpenGL\glad\include\KHR\khrplatform.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="vaoLibrary.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FlyCamera.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="LearnOpenGL\glad\src\glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shader.cpp" />
+    <ClCompile Include="vaoLibrary.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\simpleFrag.glsl" />
