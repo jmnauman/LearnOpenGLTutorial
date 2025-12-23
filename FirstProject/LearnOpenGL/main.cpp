@@ -12,8 +12,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "FlyCamera.h"
+
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window, float& mixStrength);
+void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime);
+void mouseCallback(GLFWwindow* window, double xPos, double yPos);
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void drawTriangle();
 GLuint getTriangleVAO();
 GLuint getRectangleVAO(float texScale, float texOffset);
@@ -23,6 +27,13 @@ GLuint getTriangleVAOWithTexCoord();
 GLuint getBoxVAO();
 
 GLuint createTex(const char* texPath, int sWrap = GL_REPEAT, int tWrap = GL_REPEAT, int magFilter = GL_LINEAR);
+
+float deltaTime = 0.f;
+float lastFrame = 0.f;
+float lastX = 400;
+float lastY = 300;
+bool firstMouse = true;
+FlyCamera camera(800.f / 600.f);
 
 int main()
 {
@@ -38,6 +49,10 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
+	// Capture mouse movement, force it to remain inside the window, and don't show the pointer.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouseCallback);
+	glfwSetScrollCallback(window, scrollCallback);
 	glfwMakeContextCurrent(window);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -76,23 +91,22 @@ int main()
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
 	{
-		processInput(window, mixStrength);
+		float time = (float)glfwGetTime();
+		deltaTime = time - lastFrame;
+		lastFrame = time;
+
+		processInput(window, mixStrength, deltaTime);
 		glClearColor(0.3f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
-		// Note that we're translating the SCENE relative to the camera. In this case, moving the scene forward to get the appearance
-		// of moving the camera back.
-		glm::mat4 view = t(glm::vec3(0.f, 0.f, -3.f));
-		glm::mat4 proj = pProj(60.f, 800.f, 600.f, 0.1f, 100.f);
-
 		simpleShader.use(); // Every shader and rendering call after this will use the program with our linked vertex/frag shader
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
 		simpleShader.setInt("tex2", 1);
 		simpleShader.setFloat("mixStrength", mixStrength);
-		simpleShader.setMatrix4("view", view);
-		simpleShader.setMatrix4("proj", proj);
+		simpleShader.setMatrix4("view", camera.getView());
+		simpleShader.setMatrix4("proj", camera.getProj());
 
 		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
 		glBindTexture(GL_TEXTURE_2D, tex0);
@@ -123,8 +137,9 @@ void frameBufferSizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window, float& mixStrength)
+void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime)
 {
+	const float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
@@ -133,6 +148,40 @@ void processInput(GLFWwindow* window, float& mixStrength)
 
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		mixStrength = mixStrength - 0.01f < 0.f ? 0.f : mixStrength - 0.01f;
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera.moveForward(deltaTime);
+
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.moveBackward(deltaTime);
+
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.moveLeft(deltaTime);
+
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera.moveRight(deltaTime);
+}
+
+void mouseCallback(GLFWwindow* window, double xPos, double yPos)
+{
+	if (firstMouse)
+	{
+		lastX = xPos;
+		lastY = yPos;
+		firstMouse = false;
+	}
+
+	float dx = xPos - lastX;
+	float dy = yPos - lastY;
+	lastX = xPos;
+	lastY = yPos;
+
+	camera.adjustLook(dx, dy);
+}
+
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
+{
+	camera.zoom(-yOffset);
 }
 
 // Usually when you have multiple objects, you first generatte/configure all the VAOs (attribute pointers + VBOs) then store for later use.

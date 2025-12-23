@@ -1,0 +1,34 @@
+OpenGL doesn't have the concept of a camera, but you can fake it by moving the scene opposite to how a real camera would move to get the same effect.
+
+If you define a coordinate space using 3 perpendicular axes, can create a matrix with those 3 axes plus translation and transform any vector to the space that the matrix defines.
+
+lookAt = 
+Rx Ry Rz 0
+Ux Uy Uz 0
+Dx Dy Dz 0
+0  0  0  1
+*
+1  0  0  -Px
+0  1  0  -Py
+0  0  1  -Pz
+0  0  0  1
+R: right vector
+U: up vector
+D: direction vector
+P: camera's position vector
+First mat is rotation, second mat is translated. We've reversed the typical order and negated because we want to first translate points so that they're relative to camera position, then rotate them.
+
+Code for calculating the axes we'd want. Don't actually have to do this because glm provides a look at function:
+
+	glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f);
+	glm::vec3 cameraTarget = glm::vec3(0.f, 0.f, 0.f);
+	// We flip the subtraction order because we want the camera's positive z to point away from the target. I don't understand why.
+	// So this direction is actually opposite to how the camera is pointing.
+	glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+
+	// Since we know which way is up, we use a cross product to get a vector perpendicular to the plane made by up and direction, which gets us right.
+	// More about the process of creating the axes from these vector: https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
+	glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
+	glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+	glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
