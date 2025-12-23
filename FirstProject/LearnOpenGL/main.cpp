@@ -105,7 +105,7 @@ int main()
 		simpleShader.setInt("tex", 0); // I think this is saying "the sampler called tex will sample from texture unit (or location 0)". We then bind our texture to that location below.
 		simpleShader.setInt("tex2", 1);
 		simpleShader.setFloat("mixStrength", mixStrength);
-		simpleShader.setMatrix4("view", camera.getManualView());
+		simpleShader.setMatrix4("view", camera.getView());
 		simpleShader.setMatrix4("proj", camera.getProj());
 
 		glActiveTexture(GL_TEXTURE0); // This activates "texture unit 0". The next line will bind the texture to that unit. tex unit is the location from which a sampler will sample. This is how we can get multiple textures.
