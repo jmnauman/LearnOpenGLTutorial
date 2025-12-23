@@ -11,6 +11,7 @@ public:
 
 	glm::mat4 getProj() const;
 	glm::mat4 getView() const;
+	glm::mat4 getManualView() const;
 	void adjustLook(float dx, float dy);
 	void moveForward(float deltaTime);
 	void moveBackward(float deltaTime);
