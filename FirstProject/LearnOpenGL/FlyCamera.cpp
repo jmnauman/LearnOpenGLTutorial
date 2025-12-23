@@ -19,7 +19,7 @@ void FlyCamera::adjustLook(float dx, float dy)
 {
 	yaw += dx * yawSensitivity;
 	pitch -= dy * pitchSensitivity;
-	glm::clamp(pitch, -89.f, 89.f);
+	pitch = glm::clamp(pitch, -89.f, 89.f);
 	float yawRad = glm::radians(yaw);
 	float pitchRad = glm::radians(pitch);
 	cameraFront.x = cos(yawRad) * cos(pitchRad);
