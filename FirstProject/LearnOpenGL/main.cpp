@@ -89,20 +89,21 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
+		glm::mat4 view = camera.getView();
+
 		lightingShader.use();
-		lightingShader.setMatrix4("view", camera.getView());
+		lightingShader.setMatrix4("view", view);
 		lightingShader.setMatrix4("proj", camera.getProj());
 		lightingShader.setVector3("objectColor", glm::vec3(1.f, 0.5f, 0.31f));
 		lightingShader.setVector3("lightColor", glm::vec3(1.f, 1.f, 1.f));
-		lightPos = glm::vec3(cos(time), sin(time), sin(time));
-		lightingShader.setVector3("lightPos", lightPos);
+		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
+		lightingShader.setVector3("lightPos", view * glm::vec4(lightPos, 1.f));
 
 		glBindVertexArray(objectVAO);
 		glm::mat4 model(1.f);
-		glm::mat3 normal = glm::transpose(glm::inverse(model));
+		glm::mat3 normal = glm::transpose(glm::inverse(view * model));
 		lightingShader.setMatrix4("model", model);
 		lightingShader.setMatrix3("normal", normal);
-		lightingShader.setVector3("viewPos", camera.getPos());
 		lightingShader.setFloat("ambientIntensity", .1f);
 		lightingShader.setInt("shininess", 32);
 		lightingShader.setFloat("specIntensity", .5f);
@@ -110,7 +111,7 @@ int main()
 
 		// The light source object is simply so that we can visualize where the light source is
 		lightSourceShader.use();
-		lightSourceShader.setMatrix4("view", camera.getView());
+		lightSourceShader.setMatrix4("view", view);
 		lightSourceShader.setMatrix4("proj", camera.getProj());
 		glBindVertexArray(lightVAO);
 		model = glm::translate(model, lightPos);
