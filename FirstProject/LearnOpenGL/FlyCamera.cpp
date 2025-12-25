@@ -72,8 +72,23 @@ void FlyCamera::moveRight(float deltaTime)
 	cameraPos += deltaTime * cameraSpeed * glm::normalize(glm::cross(cameraFront, up));
 }
 
+void FlyCamera::moveUp(float deltaTime)
+{
+	cameraPos += deltaTime * cameraSpeed * up;
+}
+
+void FlyCamera::moveDown(float deltaTime)
+{
+	cameraPos -= deltaTime * cameraSpeed * up;
+}
+
 void FlyCamera::zoom(float offset)
 {
 	fov -= offset;
 	fov = glm::clamp(fov, 1.f, 80.f);
+}
+
+glm::vec3 FlyCamera::getPos() const
+{
+	return cameraPos;
 }

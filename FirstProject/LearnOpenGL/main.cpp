@@ -93,10 +93,18 @@ int main()
 		lightingShader.setMatrix4("proj", camera.getProj());
 		lightingShader.setVector3("objectColor", glm::vec3(1.f, 0.5f, 0.31f));
 		lightingShader.setVector3("lightColor", glm::vec3(1.f, 1.f, 1.f));
+		glm::vec3 lightPos(1.2f, 1.f, 2.f);
+		lightingShader.setVector3("lightPos", lightPos);
 
 		glBindVertexArray(objectVAO);
 		glm::mat4 model(1.f);
+		glm::mat3 normal = glm::transpose(glm::inverse(model));
 		lightingShader.setMatrix4("model", model);
+		lightingShader.setMatrix3("normal", normal);
+		lightingShader.setVector3("viewPos", camera.getPos());
+		lightingShader.setFloat("ambientIntensity", .1f);
+		lightingShader.setInt("shininess", 32);
+		lightingShader.setFloat("specIntensity", .5f);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// The light source object is simply so that we can visualize where the light source is
@@ -104,7 +112,7 @@ int main()
 		lightSourceShader.setMatrix4("view", camera.getView());
 		lightSourceShader.setMatrix4("proj", camera.getProj());
 		glBindVertexArray(lightVAO);
-		model = glm::translate(model, glm::vec3(1.2f, 1.f, 2.f));
+		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
 		lightSourceShader.setMatrix4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -146,6 +154,12 @@ void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime)
 
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.moveRight(deltaTime);
+
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		camera.moveDown(deltaTime);
+
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		camera.moveUp(deltaTime);
 }
 
 void mouseCallback(GLFWwindow* window, double xPos, double yPos)

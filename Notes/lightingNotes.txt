@@ -1,0 +1,34 @@
+Starting with the Phong model. 3 Components:
+1. Ambient. Apply a constant color to everything since environments are almost never pitch blck. There's almost always scattering from other lights, even if those lights don't actually exist in a scene.
+  a. Global Illumination is a more realistic way to get ambient lighting by simulating reflections. Or, ambient as we're doing it is a very simple form of global illumination.
+2. Diffuse. Simulates directional impact a light has on an object. Strength is relative to facing.
+   Most visually significant component
+3. Specular. Simulates the bright spot that appears on shiny objects. More inclined to the color of the light
+   than the color of the object.
+   
+Ambient
+
+Take the light color, mulitply by a small constant ambien factor, then multiply with the object's color.
+
+
+Diffuse
+Lighting give more brightness the closer its fragments are aligned to light rays from a light source.
+Can use dot product to get the angle between the normal (unit vector perpendicular to the frag) and the light source.
+We add diffuse to ambient, not multiply.
+You can't just transform normals by multiplying by the model matrix. Although you can avoid translation by zeroing w, non-uniform scaling can distort the normal in such a way that it's no longer perpendicular to the surface.
+
+Instead, use the normal matrix. "transpose of the inverse of upper-left 3x3 (scale and rotation) part of the model matrix".
+
+Can transpose within the shader, but it's an expensive operation in shaders (remember it would need to be transposed for every vertex) and it's ideal to compute that on CPU and store via a uniform.
+
+
+Specular
+Like diffuse, it depends on the angle between the light and the normal. But it also depends on the angle between the view and the reflected light ray.
+
+NOTE: Most people prefer to calculate lighting in the view space instead of world space because the viewer's position is always (0.0, 0.0, 0.0)
+
+float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+32 is the shininess. Higher sininess means thatthe highlight becomes more focused.
+
+Gouraud shading - applying phong lighting within the vertex shader. Used to be done this way in the early
+days because the lighting calculations aren't cheap. But, lighting doesn't quite look right when the color is interpolated across the triangle, unless you have a very dense mesh.

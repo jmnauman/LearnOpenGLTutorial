@@ -17,7 +17,10 @@ public:
 	void moveBackward(float deltaTime);
 	void moveLeft(float deltaTime);
 	void moveRight(float deltaTime);
+	void moveUp(float deltaTime);
+	void moveDown(float deltaTime);
 	void zoom(float offset);
+	glm::vec3 getPos() const;
 
 private:
 	float cameraSpeed = 2.5f;
