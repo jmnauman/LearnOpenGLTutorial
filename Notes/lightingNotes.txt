@@ -18,6 +18,7 @@ We add diffuse to ambient, not multiply.
 You can't just transform normals by multiplying by the model matrix. Although you can avoid translation by zeroing w, non-uniform scaling can distort the normal in such a way that it's no longer perpendicular to the surface.
 
 Instead, use the normal matrix. "transpose of the inverse of upper-left 3x3 (scale and rotation) part of the model matrix".
+See http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/ for more info
 
 Can transpose within the shader, but it's an expensive operation in shaders (remember it would need to be transposed for every vertex) and it's ideal to compute that on CPU and store via a uniform.
 
