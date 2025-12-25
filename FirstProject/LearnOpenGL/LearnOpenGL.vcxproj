@@ -145,6 +145,8 @@
     <ClCompile Include="vaoLibrary.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\gouraudLightingFrag.glsl" />
+    <None Include="Shaders\gouraudLightingVert.glsl" />
     <None Include="Shaders\lightingFrag.glsl" />
     <None Include="Shaders\lightingVert.glsl" />
     <None Include="Shaders\lightSourceFrag.glsl" />
