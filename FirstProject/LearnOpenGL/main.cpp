@@ -74,6 +74,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	std::vector<glm::vec3> cubePositions = tenRandomPositions();
+	glm::vec3 lightPos(1.2f, 1.f, 2.f);
 
 	float mixStrength = 0.5;
 	while (!glfwWindowShouldClose(window))
@@ -93,7 +94,7 @@ int main()
 		lightingShader.setMatrix4("proj", camera.getProj());
 		lightingShader.setVector3("objectColor", glm::vec3(1.f, 0.5f, 0.31f));
 		lightingShader.setVector3("lightColor", glm::vec3(1.f, 1.f, 1.f));
-		glm::vec3 lightPos(1.2f, 1.f, 2.f);
+		lightPos = glm::vec3(cos(time), sin(time), sin(time));
 		lightingShader.setVector3("lightPos", lightPos);
 
 		glBindVertexArray(objectVAO);
