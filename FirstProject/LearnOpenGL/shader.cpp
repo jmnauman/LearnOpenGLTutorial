@@ -85,6 +85,12 @@ void Shader::setVector3(const std::string& name, glm::vec3 vec) const
 	glUniform3fv(location, 1, &vec[0]);
 }
 
+void Shader::setVector3(const std::string& name, float x, float y, float z) const
+{
+	GLint location = glGetUniformLocation(id, name.c_str());
+	glUniform3f(location, x, y ,z);
+}
+
 bool checkCompilationStatus(GLuint shaderId, const std::string& path)
 {
 	char infoLog[512];

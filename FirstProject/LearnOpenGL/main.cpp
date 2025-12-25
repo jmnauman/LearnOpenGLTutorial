@@ -63,7 +63,6 @@ int main()
 	//Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 	Shader lightingShader("./Shaders/lightingVert.glsl", "./Shaders/lightingFrag.glsl");
 	Shader lightSourceShader("./Shaders/lightingVert.glsl", "./Shaders/lightSourceFrag.glsl");
-	lightingShader = Shader("./Shaders/gouraudLightingVert.glsl", "./Shaders/gouraudLightingFrag.glsl");
 
 	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
 	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
@@ -85,33 +84,45 @@ int main()
 		lastFrame = time;
 
 		processInput(window, mixStrength, deltaTime);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.1f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glClear(GL_STENCIL_BUFFER_BIT);
 
 		glm::mat4 view = camera.getView();
 
+		glm::vec3 lightColor;
+		lightColor.x = sin(glfwGetTime() * 2.0f);
+		lightColor.y = sin(glfwGetTime() * 0.7f);
+		lightColor.z = sin(glfwGetTime() * 1.3f);
+
+		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+
 		lightingShader.use();
 		lightingShader.setMatrix4("view", view);
 		lightingShader.setMatrix4("proj", camera.getProj());
 		lightingShader.setVector3("objectColor", glm::vec3(1.f, 0.5f, 0.31f));
-		lightingShader.setVector3("lightColor", glm::vec3(1.f, 1.f, 1.f));
+		lightingShader.setVector3("light.ambient", ambientColor);
+		lightingShader.setVector3("light.diffuse", diffuseColor);
+		lightingShader.setVector3("light.specular", glm::vec3(1.f, 1.f, 1.f));
 		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
-		lightingShader.setVector3("lightPos", view * glm::vec4(lightPos, 1.f));
+		lightingShader.setVector3("light.position", view * glm::vec4(lightPos, 1.f));
 
 		glBindVertexArray(objectVAO);
 		glm::mat4 model(1.f);
 		glm::mat3 normal = glm::transpose(glm::inverse(view * model));
 		lightingShader.setMatrix4("model", model);
 		lightingShader.setMatrix3("normal", normal);
-		lightingShader.setFloat("ambientIntensity", .1f);
-		lightingShader.setInt("shininess", 32);
-		lightingShader.setFloat("specIntensity", .5f);
+		lightingShader.setVector3("material.ambient", 1.f, .5f, .31f);
+		lightingShader.setVector3("material.diffuse", 1.f, .5f, .31f);
+		lightingShader.setVector3("material.specular", .5f, .5f, .5f);
+		lightingShader.setFloat("material.shininess", 32.f);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// The light source object is simply so that we can visualize where the light source is
 		lightSourceShader.use();
+		lightSourceShader.setVector3("lightColor", lightColor);
 		lightSourceShader.setMatrix4("view", view);
 		lightSourceShader.setMatrix4("proj", camera.getProj());
 		glBindVertexArray(lightVAO);
