@@ -67,7 +67,7 @@ int main()
 	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
 	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
 	GLuint diffuseMap = createTex("./Resources/container2.png", GL_CLAMP, GL_CLAMP);
-	GLuint specMap = createTex("./Resources/container2_specular.png", GL_CLAMP, GL_CLAMP);
+	GLuint specMap = createTex("./Resources/lighting_maps_specular_color.png", GL_CLAMP, GL_CLAMP);
 
 	GLuint objectVAO = getBoxVAO();
 	GLuint lightVAO = getLightSourceVAO();
