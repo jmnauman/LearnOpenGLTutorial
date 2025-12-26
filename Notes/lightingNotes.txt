@@ -33,3 +33,7 @@ float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 
 Gouraud shading - applying phong lighting within the vertex shader. Used to be done this way in the early
 days because the lighting calculations aren't cheap. But, lighting doesn't quite look right when the color is interpolated across the triangle, unless you have a very dense mesh.
+
+Diffuse map - a texture that represents the object's diffuse colors. Think "albedo".
+
+Spec map - a texture that represents specular strength. Usually black and white, because the color of the specular highlight is mostly determined by the light source so we normally only care about intensity.

@@ -66,6 +66,8 @@ int main()
 
 	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
 	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
+	GLuint diffuseMap = createTex("./Resources/container2.png", GL_CLAMP, GL_CLAMP);
+	GLuint specMap = createTex("./Resources/container2_specular.png", GL_CLAMP, GL_CLAMP);
 
 	GLuint objectVAO = getBoxVAO();
 	GLuint lightVAO = getLightSourceVAO();
@@ -91,10 +93,10 @@ int main()
 
 		glm::mat4 view = camera.getView();
 
-		glm::vec3 lightColor;
-		lightColor.x = sin(glfwGetTime() * 2.0f);
-		lightColor.y = sin(glfwGetTime() * 0.7f);
-		lightColor.z = sin(glfwGetTime() * 1.3f);
+		glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
+		//lightColor.x = sin(glfwGetTime() * 2.0f);
+		//lightColor.y = sin(glfwGetTime() * 0.7f);
+		//lightColor.z = sin(glfwGetTime() * 1.3f);
 
 		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
 		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
@@ -114,8 +116,12 @@ int main()
 		glm::mat3 normal = glm::transpose(glm::inverse(view * model));
 		lightingShader.setMatrix4("model", model);
 		lightingShader.setMatrix3("normal", normal);
-		lightingShader.setVector3("material.ambient", 1.f, .5f, .31f);
-		lightingShader.setVector3("material.diffuse", 1.f, .5f, .31f);
+		lightingShader.setInt("material.diffuse", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		lightingShader.setInt("material.specular", 1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specMap);
 		lightingShader.setVector3("material.specular", .5f, .5f, .5f);
 		lightingShader.setFloat("material.shininess", 32.f);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
