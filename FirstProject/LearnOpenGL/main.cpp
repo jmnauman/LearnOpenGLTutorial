@@ -99,7 +99,7 @@ int main()
 		//lightColor.z = sin(glfwGetTime() * 1.3f);
 
 		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
-		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+		glm::vec3 ambientColor = lightColor * glm::vec3(0.2f);
 
 		lightingShader.use();
 		lightingShader.setMatrix4("view", view);

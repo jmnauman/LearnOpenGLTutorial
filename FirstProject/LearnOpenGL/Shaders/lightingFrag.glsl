@@ -35,7 +35,7 @@ void main()
     vec3 viewDir = normalize(-pos);
     vec3 reflectDir = reflect(-lightDir, norm); // remember lightDir is going from frag to light. reflect expects opposite.
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specColor = spec * vec3(texture(material.specular, uv)) * light.specular;
+    vec3 specColor = spec * (1.0 - vec3(texture(material.specular, uv))) * light.specular;
     
     vec3 result = diffuseColor + ambientColor + specColor;
     FragColor = vec4(result, 1.0);
