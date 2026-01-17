@@ -33,6 +33,7 @@ struct DirectionalLight {
 struct SpotLight {
     vec3 position;
     vec3 direction;
+    float innerCone;
     float cutoff;
     vec3 ambient;
     vec3 diffuse;
@@ -68,10 +69,12 @@ void main()
     
         vec3 emission = vec3(texture(material.emission, uv));
 
+        float intensity = clamp((theta - light.cutoff) / (light.innerCone - light.cutoff), 0.0, 1.0);
+
         float lightDist = length(light.position - pos);
         float atten = 1.0 / (light.constant + light.linear * lightDist + light.quadratic * lightDist * lightDist);
         // If you have more than one light source, ambient components may start to stack up, so might want to attenuate that as well
-        result = atten * (diffuseColor + specColor) + ambientColor + emission;
+        result = atten * intensity * (diffuseColor + specColor) + ambientColor + emission;
     }
     else
     {

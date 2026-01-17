@@ -118,7 +118,8 @@ int main()
 		//lightingShader.setVector3("light.position", lightPos);
 		lightingShader.setVector3("light.position", camera.getPos());
 		lightingShader.setVector3("light.direction", camera.getFront());
-		lightingShader.setFloat("light.cutoff", glm::cos(glm::radians(12.5f))); // Gonna compare this to a dot product in the shader. Remember that dot prod of directions is equivalent to a cosine evaluation
+		lightingShader.setFloat("light.innerCone", glm::cos(glm::radians(12.5f)));
+		lightingShader.setFloat("light.cutoff", glm::cos(glm::radians(30.f))); // Gonna compare this to a dot product in the shader. Remember that dot prod of directions is equivalent to a cosine evaluation
 		lightingShader.setFloat("light.constant", 1.f);
 		lightingShader.setFloat("light.linear", .09f);
 		lightingShader.setFloat("light.quadratic", 0.032f);
