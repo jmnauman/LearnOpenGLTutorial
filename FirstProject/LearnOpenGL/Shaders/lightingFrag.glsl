@@ -21,7 +21,14 @@ struct Light {
     vec3 specular;
 };
 
-uniform Light light;
+struct DirectionalLight {
+    vec3 direction;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+uniform DirectionalLight light;
 
 void main()
 {
@@ -30,7 +37,8 @@ void main()
     vec3 ambientColor = light.ambient * diffuse;
 
     // Important to make sure diffuseColor doesn't have negative components, as lighting for negative colors isn't really defined
-    vec3 lightDir = normalize(light.position - pos);
+    //vec3 lightDir = normalize(light.position - pos);
+    vec3 lightDir = normalize(-light.direction); // negated because our calculations assume direction is from frag to light source
     vec3 diffuseColor = diffuse * light.diffuse * max(dot(norm, lightDir), 0.0);
     
     vec3 viewDir = normalize(-pos);

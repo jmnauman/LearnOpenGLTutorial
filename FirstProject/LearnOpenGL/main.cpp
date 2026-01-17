@@ -77,9 +77,13 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	std::vector<glm::vec3> cubePositions = tenRandomPositions();
-	glm::vec3 lightPos(1.2f, 1.f, 2.f);
+	glm::vec3 lightPos(0.6f, 3.f, -.9f);
+	glm::vec4 lightDirection(-.2f, -1.f, -.3f, 0.f);
 
 	float mixStrength = 0.5;
+
+	std::vector<glm::vec3> positions = tenRandomPositions();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		float time = (float)glfwGetTime();
@@ -110,13 +114,11 @@ int main()
 		lightingShader.setVector3("light.diffuse", diffuseColor);
 		lightingShader.setVector3("light.specular", glm::vec3(1.f, 1.f, 1.f));
 		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
-		lightingShader.setVector3("light.position", view * glm::vec4(lightPos, 1.f));
+		//lightingShader.setVector3("light.position", view * glm::vec4(lightPos, 1.f));
+		lightingShader.setVector3("light.direction", glm::vec3(view * lightDirection));
 
 		glBindVertexArray(objectVAO);
 		glm::mat4 model(1.f);
-		glm::mat3 normal = glm::transpose(glm::inverse(view * model));
-		lightingShader.setMatrix4("model", model);
-		lightingShader.setMatrix3("normal", normal);
 		lightingShader.setInt("material.diffuse", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
@@ -127,7 +129,18 @@ int main()
 		glActiveTexture(GL_TEXTURE2);
 		//glBindTexture(GL_TEXTURE_2D, emissionMap);
 		lightingShader.setFloat("material.shininess", 32.f);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		for (int i = 0; i < 10; i++)
+		{
+			glm::mat4 model = glm::mat3(1.f);
+			model = glm::translate(model, positions[i]);
+			float angle = 20.f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.f, .3f, .5f));
+			glm::mat3 normal = glm::transpose(glm::inverse(view * model));
+			lightingShader.setMatrix4("model", model);
+			lightingShader.setMatrix3("normal", normal);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		// The light source object is simply so that we can visualize where the light source is
 		lightSourceShader.use();
