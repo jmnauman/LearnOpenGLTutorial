@@ -111,18 +111,37 @@ int main()
 		lightingShader.setVector3("viewPos", camera.getPos());
 		lightingShader.setMatrix4("proj", camera.getProj());
 		lightingShader.setVector3("objectColor", glm::vec3(1.f, 0.5f, 0.31f));
-		lightingShader.setVector3("light.ambient", ambientColor);
-		lightingShader.setVector3("light.diffuse", diffuseColor);
-		lightingShader.setVector3("light.specular", glm::vec3(1.f, 1.f, 1.f));
+		lightingShader.setVector3("spotLight.ambient", ambientColor);
+		lightingShader.setVector3("spotLight.diffuse", diffuseColor);
+		lightingShader.setVector3("spotLight.specular", glm::vec3(1.f, 1.f, 1.f));
 		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
 		//lightingShader.setVector3("light.position", lightPos);
-		lightingShader.setVector3("light.position", camera.getPos());
-		lightingShader.setVector3("light.direction", camera.getFront());
-		lightingShader.setFloat("light.innerCone", glm::cos(glm::radians(12.5f)));
-		lightingShader.setFloat("light.cutoff", glm::cos(glm::radians(30.f))); // Gonna compare this to a dot product in the shader. Remember that dot prod of directions is equivalent to a cosine evaluation
-		lightingShader.setFloat("light.constant", 1.f);
-		lightingShader.setFloat("light.linear", .09f);
-		lightingShader.setFloat("light.quadratic", 0.032f);
+		lightingShader.setVector3("spotLight.position", camera.getPos());
+		lightingShader.setVector3("spotLight.direction", camera.getFront());
+		lightingShader.setFloat("spotLight.innerCone", glm::cos(glm::radians(12.5f)));
+		lightingShader.setFloat("spotLight.cutoff", glm::cos(glm::radians(30.f))); // Gonna compare this to a dot product in the shader. Remember that dot prod of directions is equivalent to a cosine evaluation
+		lightingShader.setFloat("spotLight.constant", 1.f);
+		lightingShader.setFloat("spotLight.linear", .09f);
+		lightingShader.setFloat("spotLight.quadratic", 0.032f);
+
+		lightingShader.setVector3("dirLight.ambient", ambientColor);
+		lightingShader.setVector3("dirLight.diffuse", diffuseColor);
+		lightingShader.setVector3("dirLight.specular", glm::vec3(1.f, 1.f, 1.f));
+		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
+		//lightingShader.setVector3("light.position", lightPos);
+		lightingShader.setVector3("dirLight.direction", lightDirection);
+		//
+
+		lightingShader.setVector3("pointLight.ambient", ambientColor);
+		lightingShader.setVector3("pointLight.diffuse", diffuseColor);
+		lightingShader.setVector3("pointLight.specular", glm::vec3(1.f, 1.f, 1.f));
+		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
+		//lightingShader.setVector3("light.position", lightPos);
+		lightingShader.setVector3("pointLight.position", lightPos);
+		lightingShader.setFloat("pointLight.constant", 1.f);
+		lightingShader.setFloat("pointLight.linear", .09f);
+		lightingShader.setFloat("pointLight.quadratic", 0.032f);
+
 		//
 
 		glBindVertexArray(objectVAO);
