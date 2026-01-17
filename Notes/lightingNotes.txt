@@ -39,3 +39,11 @@ Diffuse map - a texture that represents the object's diffuse colors. Think "albe
 Spec map - a texture that represents specular strength. Usually black and white, because the color of the specular highlight is mostly determined by the light source so we normally only care about intensity.
 
 Emission map - texture that represents emission (not reflection) of light FROM THE OBJECT. Think of glowing eyes.
+
+Light caster types:
+Directional Light - a light very far away, such that light the effect of the light can be approximated with parallel light rays
+	Location of the light doesn't matter.
+	Lighting calculations are similar for each object
+	
+Point light - has a position, rays fade further from the light
+	What we had previously wasn't a point light, because no attenuation with distance

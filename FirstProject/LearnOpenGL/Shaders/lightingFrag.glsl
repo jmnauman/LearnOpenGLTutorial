@@ -13,11 +13,14 @@ struct Material {
 }; 
   
 
-struct Light {
+struct PointLight {
     vec3 position;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+    float constant;
+    float linear;
+    float quadratic;
 };
 
 struct DirectionalLight {
@@ -29,7 +32,7 @@ struct DirectionalLight {
 
 uniform vec3 viewPos;
 uniform Material material;
-uniform Light light;
+uniform PointLight light;
 
 void main()
 {
@@ -49,6 +52,9 @@ void main()
     
     vec3 emission = vec3(texture(material.emission, uv));
 
-    vec3 result = emission + diffuseColor + ambientColor + specColor;
+    float lightDist = length(light.position - pos);
+    float atten = 1.0 / (light.constant + light.linear * lightDist + light.quadratic * lightDist * lightDist);
+    // If you have more than one light source, ambient components may start to stack up, so might want to attenuate that as well
+    vec3 result = atten * (diffuseColor + specColor) + ambientColor + emission;
     FragColor = vec4(result, 1.0);
 }

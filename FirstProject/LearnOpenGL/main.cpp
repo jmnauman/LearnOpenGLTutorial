@@ -116,6 +116,9 @@ int main()
 		lightingShader.setVector3("light.specular", glm::vec3(1.f, 1.f, 1.f));
 		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
 		lightingShader.setVector3("light.position", lightPos);
+		lightingShader.setFloat("light.constant", 1.f);
+		lightingShader.setFloat("light.linear", .09f);
+		lightingShader.setFloat("light.quadratic", 0.032f);
 		//lightingShader.setVector3("light.direction", lightDirection);
 
 		glBindVertexArray(objectVAO);
