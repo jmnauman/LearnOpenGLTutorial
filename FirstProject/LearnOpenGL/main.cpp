@@ -77,8 +77,8 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	std::vector<glm::vec3> cubePositions = tenRandomPositions();
-	glm::vec3 lightPos(0.6f, 3.f, -.9f);
-	glm::vec4 lightDirection(-.2f, -1.f, -.3f, 0.f);
+	glm::vec3 lightPos(0.6f, 1.f, -.9f);
+	glm::vec3 lightDirection(-.2f, -1.f, -.3f);
 
 	float mixStrength = 0.5;
 
@@ -108,14 +108,15 @@ int main()
 
 		lightingShader.use();
 		lightingShader.setMatrix4("view", view);
+		lightingShader.setVector3("viewPos", camera.getPos());
 		lightingShader.setMatrix4("proj", camera.getProj());
 		lightingShader.setVector3("objectColor", glm::vec3(1.f, 0.5f, 0.31f));
 		lightingShader.setVector3("light.ambient", ambientColor);
 		lightingShader.setVector3("light.diffuse", diffuseColor);
 		lightingShader.setVector3("light.specular", glm::vec3(1.f, 1.f, 1.f));
 		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
-		//lightingShader.setVector3("light.position", view * glm::vec4(lightPos, 1.f));
-		lightingShader.setVector3("light.direction", glm::vec3(view * lightDirection));
+		lightingShader.setVector3("light.position", lightPos);
+		//lightingShader.setVector3("light.direction", lightDirection);
 
 		glBindVertexArray(objectVAO);
 		glm::mat4 model(1.f);
@@ -136,7 +137,7 @@ int main()
 			model = glm::translate(model, positions[i]);
 			float angle = 20.f * i;
 			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.f, .3f, .5f));
-			glm::mat3 normal = glm::transpose(glm::inverse(view * model));
+			glm::mat3 normal = glm::transpose(glm::inverse(model));
 			lightingShader.setMatrix4("model", model);
 			lightingShader.setMatrix3("normal", normal);
 			glDrawArrays(GL_TRIANGLES, 0, 36);

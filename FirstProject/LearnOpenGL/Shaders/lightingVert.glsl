@@ -15,7 +15,7 @@ uniform mat3 normal;
 void main()
 {
     gl_Position = proj * view * model * vec4(aPos, 1.0);
-    pos = vec3(view * model * vec4(aPos, 1.0));
+    pos = vec3(model * vec4(aPos, 1.0));
     norm = normalize(normal * aNorm);
     uv = aUv;
 } 
