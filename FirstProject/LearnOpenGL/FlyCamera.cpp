@@ -92,3 +92,8 @@ glm::vec3 FlyCamera::getPos() const
 {
 	return cameraPos;
 }
+
+glm::vec3 FlyCamera::getFront() const
+{
+	return cameraFront;
+}

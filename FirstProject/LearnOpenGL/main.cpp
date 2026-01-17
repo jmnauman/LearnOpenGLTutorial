@@ -115,11 +115,14 @@ int main()
 		lightingShader.setVector3("light.diffuse", diffuseColor);
 		lightingShader.setVector3("light.specular", glm::vec3(1.f, 1.f, 1.f));
 		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
-		lightingShader.setVector3("light.position", lightPos);
+		//lightingShader.setVector3("light.position", lightPos);
+		lightingShader.setVector3("light.position", camera.getPos());
+		lightingShader.setVector3("light.direction", camera.getFront());
+		lightingShader.setFloat("light.cutoff", glm::cos(glm::radians(12.5f))); // Gonna compare this to a dot product in the shader. Remember that dot prod of directions is equivalent to a cosine evaluation
 		lightingShader.setFloat("light.constant", 1.f);
 		lightingShader.setFloat("light.linear", .09f);
 		lightingShader.setFloat("light.quadratic", 0.032f);
-		//lightingShader.setVector3("light.direction", lightDirection);
+		//
 
 		glBindVertexArray(objectVAO);
 		glm::mat4 model(1.f);
