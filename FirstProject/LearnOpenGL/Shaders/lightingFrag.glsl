@@ -47,7 +47,8 @@ uniform vec3 viewPos;
 uniform Material material;
 uniform DirectionalLight dirLight;
 uniform SpotLight spotLight;
-uniform PointLight pointLight;
+#define NR_POINT_LIGHTS 4
+uniform PointLight pointLights[NR_POINT_LIGHTS];
 
 float Attenuate(float dist, float kc, float kl, float kq);
 vec3 CalculateSpec(vec3 viewPos, vec3 pos, vec3 lightDir, float shininess, vec3 matSpec, vec3 lightSpec, vec3 norm);
@@ -61,9 +62,14 @@ void main()
     vec3 matDiffuse = vec3(texture(material.diffuse, uv));
     vec3 matSpec = vec3(texture(material.specular, uv));
     vec3 viewDir = normalize(viewPos - pos);
-    //result += CalculateDirectionalLight(dirLight, matDiffuse, matSpec, norm, viewDir, material.shininess, pos);
-    //result += CalculateSpotLight(spotLight, matDiffuse, matSpec, norm, viewDir, material.shininess, pos);
-    result += CalculatePointLight(pointLight, matDiffuse, matSpec, norm, viewDir, material.shininess, pos);
+    vec3 normal = normalize(norm);
+    result += CalculateDirectionalLight(dirLight, matDiffuse, matSpec, normal, viewDir, material.shininess, pos);
+    result += CalculateSpotLight(spotLight, matDiffuse, matSpec, normal, viewDir, material.shininess, pos);
+
+    for (int i = 0; i < NR_POINT_LIGHTS; i++) {
+        result += CalculatePointLight(pointLights[i], matDiffuse, matSpec, normal, viewDir, material.shininess, pos);
+    }
+
     FragColor = vec4(result, 1.0);
 }
 
@@ -123,5 +129,5 @@ vec3 CalculatePointLight(PointLight light, vec3 matDiffuse, vec3 matSpec, vec3 n
     
     float attenuation = Attenuate(lightDist, light.constant, light.linear, light.quadratic);
 
-    return attenuation * (diffuseColor + specColor); //+ ambientColor;
+    return attenuation * (diffuseColor + specColor + ambientColor);
 }

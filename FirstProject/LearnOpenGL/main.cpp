@@ -29,6 +29,8 @@ float lastY = 300;
 bool firstMouse = true;
 FlyCamera camera(800.f / 600.f);
 
+const int MAX_NUMBER_POINT_LIGHTS = 4;
+
 int main()
 {
 	glfwInit();
@@ -77,8 +79,13 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	std::vector<glm::vec3> cubePositions = tenRandomPositions();
-	glm::vec3 lightPos(0.6f, 1.f, -.9f);
-	glm::vec3 lightDirection(-.2f, -1.f, -.3f);
+
+	glm::vec3 pointLightPositions[] = {
+	glm::vec3(0.7f,  0.2f,  2.0f),
+	glm::vec3(2.3f, -3.3f, -4.0f),
+	glm::vec3(-4.0f,  2.0f, -12.0f),
+	glm::vec3(0.0f,  0.0f, -3.0f)
+	};
 
 	float mixStrength = 0.5;
 
@@ -104,7 +111,7 @@ int main()
 		//lightColor.z = sin(glfwGetTime() * 1.3f);
 
 		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
-		glm::vec3 ambientColor = lightColor * glm::vec3(0.2f);
+		glm::vec3 ambientColor = lightColor * glm::vec3(0.1f);
 
 		lightingShader.use();
 		lightingShader.setMatrix4("view", view);
@@ -129,20 +136,20 @@ int main()
 		lightingShader.setVector3("dirLight.specular", glm::vec3(1.f, 1.f, 1.f));
 		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
 		//lightingShader.setVector3("light.position", lightPos);
-		lightingShader.setVector3("dirLight.direction", lightDirection);
-		//
+		lightingShader.setVector3("dirLight.direction", glm::vec3(-.2f, -1.f, -.3f));
+		
+		for (int i = 0; i < MAX_NUMBER_POINT_LIGHTS; i++)
+		{
+			std::string structName = "pointLights[" + std::to_string(i) + "].";
+			lightingShader.setVector3(structName + "ambient", ambientColor);
+			lightingShader.setVector3(structName + "diffuse", diffuseColor);
+			lightingShader.setVector3(structName + "specular", glm::vec3(1.f, 1.f, 1.f));
+			lightingShader.setVector3(structName + "position", pointLightPositions[i]);
 
-		lightingShader.setVector3("pointLight.ambient", ambientColor);
-		lightingShader.setVector3("pointLight.diffuse", diffuseColor);
-		lightingShader.setVector3("pointLight.specular", glm::vec3(1.f, 1.f, 1.f));
-		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
-		//lightingShader.setVector3("light.position", lightPos);
-		lightingShader.setVector3("pointLight.position", lightPos);
-		lightingShader.setFloat("pointLight.constant", 1.f);
-		lightingShader.setFloat("pointLight.linear", .09f);
-		lightingShader.setFloat("pointLight.quadratic", 0.032f);
-
-		//
+			lightingShader.setFloat(structName + "constant", 1.f);
+			lightingShader.setFloat(structName + "linear", .09f);
+			lightingShader.setFloat(structName + "quadratic", 0.032f);
+		}
 
 		glBindVertexArray(objectVAO);
 		glm::mat4 model(1.f);
@@ -175,10 +182,15 @@ int main()
 		lightSourceShader.setMatrix4("view", view);
 		lightSourceShader.setMatrix4("proj", camera.getProj());
 		glBindVertexArray(lightVAO);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
-		lightSourceShader.setMatrix4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		for (int i = 0; i < MAX_NUMBER_POINT_LIGHTS; i++)
+		{
+			model = glm::mat3(1.f);
+			model = glm::translate(model, pointLightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.2f));
+			lightSourceShader.setMatrix4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
 
