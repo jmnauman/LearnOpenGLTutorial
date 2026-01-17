@@ -37,3 +37,5 @@ days because the lighting calculations aren't cheap. But, lighting doesn't quite
 Diffuse map - a texture that represents the object's diffuse colors. Think "albedo".
 
 Spec map - a texture that represents specular strength. Usually black and white, because the color of the specular highlight is mostly determined by the light source so we normally only care about intensity.
+
+Emission map - texture that represents emission (not reflection) of light FROM THE OBJECT. Think of glowing eyes.

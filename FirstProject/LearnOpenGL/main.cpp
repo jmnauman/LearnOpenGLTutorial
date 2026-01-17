@@ -68,7 +68,7 @@ int main()
 	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
 	GLuint diffuseMap = createTex("./Resources/container2.png", GL_CLAMP, GL_CLAMP);
 	GLuint specMap = createTex("./Resources/container2_specular.png", GL_CLAMP, GL_CLAMP);
-	GLuint emissionMap = createTex("./Resources/matrix.jpg", GL_CLAMP, GL_CLAMP);
+	//GLuint emissionMap = createTex("./Resources/matrix.jpg", GL_CLAMP, GL_CLAMP);
 
 	GLuint objectVAO = getBoxVAO();
 	GLuint lightVAO = getLightSourceVAO();
@@ -125,7 +125,7 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, specMap);
 		lightingShader.setInt("material.emission", 2);
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, emissionMap);
+		//glBindTexture(GL_TEXTURE_2D, emissionMap);
 		lightingShader.setFloat("material.shininess", 32.f);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
