@@ -9,11 +9,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "FlyCamera.h"
+#include "vaoLibrary.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "FlyCamera.h"
-#include "vaoLibrary.h"
+#include "Model.h"
 
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, float& mixStrength, const float deltaTime);
@@ -64,6 +65,7 @@ int main()
 
 	//Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
 	Shader lightingShader("./Shaders/lightingVert.glsl", "./Shaders/lightingFrag.glsl");
+	Shader lightingModelShader("./Shaders/lightingVertModel.glsl", "./Shaders/lightingFragModel.glsl");
 	Shader lightSourceShader("./Shaders/lightingVert.glsl", "./Shaders/lightSourceFrag.glsl");
 
 	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
@@ -71,6 +73,10 @@ int main()
 	GLuint diffuseMap = createTex("./Resources/container2.png", GL_CLAMP, GL_CLAMP);
 	GLuint specMap = createTex("./Resources/container2_specular.png", GL_CLAMP, GL_CLAMP);
 	//GLuint emissionMap = createTex("./Resources/matrix.jpg", GL_CLAMP, GL_CLAMP);
+
+	stbi_set_flip_vertically_on_load(true); // For STBI, y == 0 is at the top. For OpenGL, y == 0 is at the bottom.
+	std::string path("./Resources/Models/Backpack/backpack.obj");
+	Model modelObj(path.c_str());
 
 	GLuint objectVAO = getBoxVAO();
 	GLuint lightVAO = getLightSourceVAO();
@@ -191,6 +197,52 @@ int main()
 			lightSourceShader.setMatrix4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
+		lightingModelShader.use();
+		lightingModelShader.setMatrix4("view", view);
+		lightingModelShader.setVector3("viewPos", camera.getPos());
+		lightingModelShader.setMatrix4("proj", camera.getProj());
+		lightingModelShader.setVector3("objectColor", glm::vec3(1.f, 0.5f, 0.31f));
+		lightingModelShader.setVector3("spotLight.ambient", ambientColor);
+		lightingModelShader.setVector3("spotLight.diffuse", diffuseColor);
+		lightingModelShader.setVector3("spotLight.specular", glm::vec3(1.f, 1.f, 1.f));
+		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
+		//lightingModelShader.setVector3("light.position", lightPos);
+		lightingModelShader.setVector3("spotLight.position", camera.getPos());
+		lightingModelShader.setVector3("spotLight.direction", camera.getFront());
+		lightingModelShader.setFloat("spotLight.innerCone", glm::cos(glm::radians(12.5f)));
+		lightingModelShader.setFloat("spotLight.cutoff", glm::cos(glm::radians(30.f))); // Gonna compare this to a dot product in the shader. Remember that dot prod of directions is equivalent to a cosine evaluation
+		lightingModelShader.setFloat("spotLight.constant", 1.f);
+		lightingModelShader.setFloat("spotLight.linear", .09f);
+		lightingModelShader.setFloat("spotLight.quadratic", 0.032f);
+
+		lightingModelShader.setVector3("dirLight.ambient", ambientColor);
+		lightingModelShader.setVector3("dirLight.diffuse", diffuseColor);
+		lightingModelShader.setVector3("dirLight.specular", glm::vec3(1.f, 1.f, 1.f));
+		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
+		//lightingModelShader.setVector3("light.position", lightPos);
+		lightingModelShader.setVector3("dirLight.direction", glm::vec3(-.2f, -1.f, -.3f));
+
+		for (int i = 0; i < MAX_NUMBER_POINT_LIGHTS; i++)
+		{
+			std::string structName = "pointLights[" + std::to_string(i) + "].";
+			lightingModelShader.setVector3(structName + "ambient", ambientColor);
+			lightingModelShader.setVector3(structName + "diffuse", diffuseColor);
+			lightingModelShader.setVector3(structName + "specular", glm::vec3(1.f, 1.f, 1.f));
+			lightingModelShader.setVector3(structName + "position", pointLightPositions[i]);
+
+			lightingModelShader.setFloat(structName + "constant", 1.f);
+			lightingModelShader.setFloat(structName + "linear", .09f);
+			lightingModelShader.setFloat(structName + "quadratic", 0.032f);
+		}
+
+		model = glm::mat4(1.f);
+		lightingModelShader.setFloat("material.shininess", 0.3f);
+		lightingModelShader.setMatrix4("model", model);
+		lightingModelShader.setMatrix4("normal", model); // Not doing any scaling
+		lightingModelShader.setMatrix4("view", view);
+		lightingModelShader.setMatrix4("proj", camera.getProj());
+		modelObj.Draw(lightingModelShader);
 
 		glfwSwapBuffers(window); // Swaps color buffer for window and shows it as output to the screen. Front buffer is the output image, back buffer is where commands go.
 

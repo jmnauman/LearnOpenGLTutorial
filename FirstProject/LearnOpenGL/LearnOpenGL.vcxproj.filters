@@ -39,6 +39,12 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\LightingFragModel.glsl">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LearnOpenGL\glad\src\glad.c">
@@ -62,6 +68,9 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\simpleFrag.glsl" />
@@ -72,6 +81,7 @@
     <None Include="Shaders\lightSourceFrag.glsl" />
     <None Include="Shaders\gouraudLightingVert.glsl" />
     <None Include="Shaders\gouraudLightingFrag.glsl" />
+    <None Include="Shaders\lightingVertModel.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\container.jpg">

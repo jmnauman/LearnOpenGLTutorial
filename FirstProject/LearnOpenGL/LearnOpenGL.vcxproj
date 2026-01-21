@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\ThirdParty\GLFW\Include;.\LearnOpenGL\glad\include\;..\ThirdParty;..\ThirdParty\glm;..\ThirdParty\assimp\include\assimp\</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\ThirdParty\GLFW\Include;.\LearnOpenGL\glad\include\;..\ThirdParty;..\ThirdParty\glm;..\ThirdParty\assimp\include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);..\ThirdParty\assimp\bin;..\ThirdParty\GLFW\Lib</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -134,7 +134,9 @@
     <ClInclude Include="LearnOpenGL\glad\include\glad\glad.h" />
     <ClInclude Include="LearnOpenGL\glad\include\KHR\khrplatform.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="Shaders\LightingFragModel.glsl" />
     <ClInclude Include="vaoLibrary.h" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +145,7 @@
     <ClCompile Include="LearnOpenGL\glad\src\glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="vaoLibrary.cpp" />
   </ItemGroup>
@@ -151,6 +154,7 @@
     <None Include="Shaders\gouraudLightingVert.glsl" />
     <None Include="Shaders\lightingFrag.glsl" />
     <None Include="Shaders\lightingVert.glsl" />
+    <None Include="Shaders\lightingVertModel.glsl" />
     <None Include="Shaders\lightSourceFrag.glsl" />
     <None Include="Shaders\simpleFrag.glsl" />
     <None Include="Shaders\simpleVert.glsl" />
