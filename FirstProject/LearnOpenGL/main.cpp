@@ -64,18 +64,18 @@ int main()
 	printNumberOfVertexAttributes();
 
 	//Shader simpleShader("./Shaders/simpleVert.glsl", "./Shaders/simpleFrag.glsl");
-	Shader lightingShader("./Shaders/lightingVert.glsl", "./Shaders/lightingFrag.glsl");
-	Shader lightingModelShader("./Shaders/lightingVertModel.glsl", "./Shaders/lightingFragModel.glsl");
-	Shader lightSourceShader("./Shaders/lightingVert.glsl", "./Shaders/lightSourceFrag.glsl");
+	Shader lightingShader("Shaders/lightingVert.glsl", "Shaders/lightingFrag.glsl");
+	Shader lightingModelShader("Shaders/lightingVertModel.glsl", "Shaders/lightingFragModel.glsl");
+	Shader lightSourceShader("Shaders/lightingVert.glsl", "Shaders/lightSourceFrag.glsl");
 
-	GLuint tex0 = createTex("./Resources/container.jpg", GL_CLAMP, GL_CLAMP);
-	GLuint tex1 = createTex("./Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
-	GLuint diffuseMap = createTex("./Resources/container2.png", GL_CLAMP, GL_CLAMP);
-	GLuint specMap = createTex("./Resources/container2_specular.png", GL_CLAMP, GL_CLAMP);
+	GLuint tex0 = createTex("Resources/container.jpg", GL_CLAMP, GL_CLAMP);
+	GLuint tex1 = createTex("Resources/awesomeface.png", GL_REPEAT, GL_REPEAT);
+	GLuint diffuseMap = createTex("Resources/container2.png", GL_CLAMP, GL_CLAMP);
+	GLuint specMap = createTex("Resources/container2_specular.png", GL_CLAMP, GL_CLAMP);
 	//GLuint emissionMap = createTex("./Resources/matrix.jpg", GL_CLAMP, GL_CLAMP);
 
 	stbi_set_flip_vertically_on_load(true); // For STBI, y == 0 is at the top. For OpenGL, y == 0 is at the bottom.
-	std::string path("./Resources/Models/Backpack/backpack.obj");
+	std::string path("Resources/Models/Backpack/backpack.obj");
 	Model modelObj(path.c_str());
 
 	GLuint objectVAO = getBoxVAO();
@@ -143,6 +143,7 @@ int main()
 		//lightPos = glm::vec3(cos(time), sin(time), sin(time));
 		//lightingShader.setVector3("light.position", lightPos);
 		lightingShader.setVector3("dirLight.direction", glm::vec3(-.2f, -1.f, -.3f));
+
 		
 		for (int i = 0; i < MAX_NUMBER_POINT_LIGHTS; i++)
 		{
@@ -237,9 +238,9 @@ int main()
 		}
 
 		model = glm::mat4(1.f);
-		lightingModelShader.setFloat("material.shininess", 0.3f);
+		lightingModelShader.setFloat("material.shininess", 32.f);
 		lightingModelShader.setMatrix4("model", model);
-		lightingModelShader.setMatrix4("normal", model); // Not doing any scaling
+		lightingModelShader.setMatrix3("normal", model); // Not doing any scaling
 		lightingModelShader.setMatrix4("view", view);
 		lightingModelShader.setMatrix4("proj", camera.getProj());
 		modelObj.Draw(lightingModelShader);
@@ -324,8 +325,10 @@ GLuint createTex(const char* texPath, int sWrap, int tWrap, int magFilter)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When the texture takes up a small enough portion of the screen, (i.e. minification) use mipmaps. Linear filtering between mipmap levels and linear filtering between texels.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); // When the texture is scaled larger, use linear filtering on texels.
 
+	std::string fullPath = resourcesPath + std::string(texPath);
+
 	int width, height, numChannels;
-	unsigned char* data = stbi_load(texPath, &width, &height, &numChannels, 0);
+	unsigned char* data = stbi_load(fullPath.c_str(), &width, &height, &numChannels, 0);
 	GLenum fmt = GL_NONE;
 	if (numChannels == 3)
 	{
@@ -344,7 +347,7 @@ GLuint createTex(const char* texPath, int sWrap, int tWrap, int magFilter)
 	}
 	else
 	{
-		std::cout << "Failed to load texture from " << texPath << '\n';
+		std::cout << "Failed to load texture from " << fullPath << '\n';
 	}
 	stbi_image_free(data);
 	data = nullptr;

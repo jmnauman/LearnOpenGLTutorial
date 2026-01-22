@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec3 norm;
 in vec3 pos;
+in vec3 norm;
 in vec2 uv;
 
 struct Material {
@@ -99,7 +99,7 @@ vec3 CalculateDirectionalLight(DirectionalLight light, vec3 matDiffuse, vec3 mat
     vec3 diffuseColor = matDiffuse * light.diffuse * max(dot(norm, lightDir), 0.0);
     vec3 specColor = CalculateSpec(viewDir, fragPos, lightDir, shininess, matSpec, light.specular, norm);
 
-    return ambientColor + diffuseColor + specColor;
+    return clamp(ambientColor + diffuseColor + specColor, 0, 1);
 }
 
 vec3 CalculateSpotLight(SpotLight light, vec3 matDiffuse, vec3 matSpec, vec3 norm, vec3 viewDir, float shininess, vec3 fragPos)
@@ -118,7 +118,7 @@ vec3 CalculateSpotLight(SpotLight light, vec3 matDiffuse, vec3 matSpec, vec3 nor
     float intensity = clamp((theta - light.cutoff) / (light.innerCone - light.cutoff), 0.0, 1.0);
     float attenuation = Attenuate(lightDist, light.constant, light.linear, light.quadratic);
 
-    return attenuation * intensity * (diffuseColor + specColor); //+ ambientColor;
+    return clamp(attenuation * intensity * (diffuseColor + specColor), 0, 1);
 }
 
 vec3 CalculatePointLight(PointLight light, vec3 matDiffuse, vec3 matSpec, vec3 norm, vec3 viewDir, float shininess, vec3 fragPos)
@@ -134,5 +134,5 @@ vec3 CalculatePointLight(PointLight light, vec3 matDiffuse, vec3 matSpec, vec3 n
 
     float attenuation = Attenuate(lightDist, light.constant, light.linear, light.quadratic);
 
-    return attenuation * (diffuseColor + specColor + ambientColor);
+    return clamp(attenuation * (diffuseColor + specColor + ambientColor), 0, 1);
 }

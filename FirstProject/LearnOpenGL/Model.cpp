@@ -11,16 +11,17 @@ void Model::Draw(Shader& shader)
 void Model::loadModel(std::string path)
 {
 	Assimp::Importer importer;
+	std::string fullPath = resourcesPath + path;
 	// trianglulate tells assimp to transform all of model's primitive shapes to triangles
 	// flupUVs flips the texture coordinates across the x axis (remember OpenGL's convention has (0, 0) in the top left)
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* scene = importer.ReadFile(fullPath, aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << '\n';
 		return;
 	}
-	directory = path.substr(0, path.find_last_of('/'));
+	directory = fullPath.substr(0, fullPath.find_last_of('/'));
 	processNode(scene->mRootNode, scene);
 }
 
@@ -74,9 +75,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	if (mesh->mMaterialIndex >= 0)
 	{
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "textureDiffuse");
+		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "textureSpecular");
+		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
 

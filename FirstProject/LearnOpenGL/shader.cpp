@@ -8,7 +8,10 @@ Shader::Shader(const char* vertPath, const char* fragPath)
 
 	std::string vertSrc;
 	std::string fragSrc;
-	if (!readFile(vertPath, vertSrc) || !readFile(fragPath, fragSrc)) return;
+	std::string fullVertPath = resourcesPath + std::string(vertPath);
+	std::string fullFragPath = resourcesPath + std::string(fragPath);
+
+	if (!readFile(fullVertPath, vertSrc) || !readFile(fullFragPath, fragSrc)) return;
 
 	const char* vertCStr = vertSrc.c_str();
 	const char* fragCStr = fragSrc.c_str();
@@ -16,12 +19,12 @@ Shader::Shader(const char* vertPath, const char* fragPath)
 	GLuint vert = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vert, 1, &vertCStr, nullptr);
 	glCompileShader(vert);
-	if (!checkCompilationStatus(vert, vertPath)) return;
+	if (!checkCompilationStatus(vert, fullVertPath)) return;
 
 	GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(frag, 1, &fragCStr, nullptr);
 	glCompileShader(frag);
-	if (!checkCompilationStatus(frag, fragPath)) return;
+	if (!checkCompilationStatus(frag, fullFragPath)) return;
 
 	GLuint program = glCreateProgram();
 	glAttachShader(program, vert);
@@ -34,7 +37,7 @@ Shader::Shader(const char* vertPath, const char* fragPath)
 	if (!success)
 	{
 		glGetProgramInfoLog(program, 512, nullptr, infoLog);
-		std::cout << "Could not link shader program compiled from " << vertPath << " and " << fragPath << '\n' << infoLog << 'n';
+		std::cout << "Could not link shader program compiled from " << fullVertPath << " and " << fullFragPath << '\n' << infoLog << 'n';
 		return;
 	}
 

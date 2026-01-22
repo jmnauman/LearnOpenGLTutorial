@@ -135,6 +135,7 @@
     <ClInclude Include="LearnOpenGL\glad\include\KHR\khrplatform.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="resources.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="Shaders\LightingFragModel.glsl" />
     <ClInclude Include="vaoLibrary.h" />

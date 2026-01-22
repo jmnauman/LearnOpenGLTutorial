@@ -45,6 +45,9 @@
     <ClInclude Include="Shaders\LightingFragModel.glsl">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LearnOpenGL\glad\src\glad.c">
